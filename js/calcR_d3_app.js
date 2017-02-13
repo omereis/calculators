@@ -336,7 +336,7 @@ var app_init = function(opts) {
         return row;
       });
       //data, fileName, type
-      saveData("#" + d3.tsv.format(output), "profile.tsv", "text/tab-separated-values");
+      saveData("#" + d3.tsvFormat(output), "profile.tsv", "text/tab-separated-values");
     }
     
     function calc_exporter() {
