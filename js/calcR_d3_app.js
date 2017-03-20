@@ -3,7 +3,7 @@
 //import {layout} from 'jquery-layout';
 //import XYChart from '../../d3-science/lib/xy-chart';
 //import default as profileInteractor from '../../d3-science/profile-interactor';
-"use strict";
+//"use strict";
 
 
 //var THETA_M = Math.PI * 3.0 / 2.0; // 270 degrees by default
@@ -605,21 +605,29 @@ var app_init = function(opts) {
     function makeFileControls(target_id) {
       var fileControls = d3.select("#" + target_id).append('div')
           .classed("file-range controls", true)
+          .style("position", "relative")
       
       fileControls.append("button")
         .text("export table")
         .on("click", export_table)
       
-      fileControls.append("button")
-        .append("label")
+      var import_button = fileControls.append("button")
         .text("import table")
-        .attr("for", "table_import_file")
-      fileControls.append("input")
-          .attr("id", "table_import_file")
-          .attr("multiple", false)
-          .attr("type", "file")
-          .style("display", "none")
-          .on("change", import_table)
+
+      var import_fileinput = d3.select("#" + target_id)
+        .append("div")
+          .style("height", "0px")
+          .style("width", "0px")
+          .style("overflow", "hidden")
+          .append("input")
+            .attr("id", "table_import_file")
+            .attr("multiple", false)
+            .attr("type", "file")
+            .on("change", import_table)
+      
+      // use jQuery event magic:
+      import_button.on("click", function() {$(import_fileinput.node()).trigger("click")});
+          
     }
     
     makeFileControls('file_controls');
@@ -840,7 +848,7 @@ var app_init = function(opts) {
     function export_table() {
       // skip the header...
       var table_data = d3.selectAll("#sld_table table tr").data().slice(1);
-      saveData(d3.tsv.format(table_data), "sld_table.txt");
+      saveData(d3.tsvFormat(table_data), "sld_table.txt");
     }
     
     function import_table() {
@@ -850,7 +858,7 @@ var app_init = function(opts) {
       file_input.value = "";
       var reader = new FileReader();
       reader.onload = function(e) {
-        var new_sld = d3.tsv.parse(this.result);
+        var new_sld = d3.tsvParse(this.result);
         new_sld.forEach(function(d) {
           for (var key in d) {
             if (d.hasOwnProperty(key)) {
