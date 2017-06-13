@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="author" content="Brian B. Maranville">
 <title>Reflectivity and wavefunction for a slab profile</title>
 <!--
     <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans" />
@@ -17,10 +18,10 @@
     <script type="text/javascript" src="js/generate_slab_script.js"></script>
     
     <script src="//d3js.org/d3.v4.min.js" charset="utf-8"></script>
-    <script src="//ncnr.nist.gov/instruments/magik/d3-science-v4/lib/jquery-extend.js" charset="utf-8"></script>
-    <script src="//ncnr.nist.gov/instruments/magik/d3-science-v4/lib/xy-chart.js" charset="utf-8"></script>
-    <script src="//ncnr.nist.gov/instruments/magik/d3-science-v4/lib/profile-interactor.js"></script>
-    <script src="//ncnr.nist.gov/instruments/magik/d3-science-v4/lib/monotonic-function-interactor.js"></script>
+    <script src="../d3-science-v4/lib/jquery-extend.js" charset="utf-8"></script>
+    <script src="../d3-science-v4/lib/xy-chart.js" charset="utf-8"></script>
+    <script src="../d3-science-v4/lib/profile-interactor.js"></script>
+    <script src="../d3-science-v4/lib/monotonic-function-interactor.js"></script>
     
     
     
@@ -80,13 +81,13 @@
         $("#AGUIDE_label").css("display", "none");
     }
     var Module = Module || {};
-    Module['memoryInitializerPrefixURL'] = 'js/refl/';
+    Module['memoryInitializerPrefixURL'] = '../webalglib/lib/';
     Module.postRun = Module.postRun || [];
     Module.postRun.push(function() { app_init(app_options); $("#AGUIDE_label").css("display", "none"); });
 
         
 </script>   
-<script src="js/refl/refl_fit.js"></script> 
+<script src="../webalglib/lib/reflfit.js"></script> 
 </head>
 <body bgcolor="#ffffcc"> 
     <div id="top_panel" class="ui-layout-north">
@@ -102,18 +103,22 @@
         <div id='sldplot'></div>
     </div>
     <div id="right" class="ui-layout-east">
-      <div id='plots_switcher'></div>
-      <div id='q_controls'></div>
-      <div id='sld_table'></div>
-      <div id='file_controls'></div>
-      <hr>
-      <div id='fit_controls'></div>
-      <div id='footer'>
-          <?php include("/var/www/include/utility.inc"); lastmod(); ?>
+      <div class="flex-column">
+          <div id='plots_switcher'></div>
+          <div id='q_controls'></div>
+          <div id='sld_table'></div>
+          <div id='file_controls'></div>
+          <hr>
+          <div id='fit_controls'></div>
+          <footer></footer>
       </div>
     </div>
     <div id="bottom_controls" align='center'></div>
     <div id="documentation_popup" ></div>
+  <script>
+    var author = document.querySelector("meta[name='author']").getAttribute("content");
+    document.querySelector("footer").innerHTML = "Last modified " + document.lastModified + " by website owner: NCNR (attn: " + author + ")";
+  </script>
 </body>
 </html>
 

@@ -131,10 +131,24 @@ var app_init = function(opts) {
       function get_column_vals(item) {
         return col_ids.map(function(id) { return item[id] });
       }
+      var top_interfaces = sld_array
+        .slice(1,-1)
+        .map(function(a) { 
+          return this.total_thickness += a.thickness }, 
+          {total_thickness: 0}
+        )
+      var interfaces = [0].concat(top_interfaces); // add the bottom interface.
+      var lower_limit = Infinity,
+          upper_limit = -Infinity;
+      interfaces.forEach(function(z, i) {
+        var roughness = (sld_array[i] || {roughness: 0}).roughness;
+        lower_limit = Math.min(lower_limit, z - 3*roughness);
+        upper_limit = Math.max(upper_limit, z + 3*roughness);
+      });
       var top_roughness = (sld_array.slice(-2,-1)[0] || {}).roughness || 0;
       var bottom_roughness = (sld_array.slice(0,1)[0] || {}).roughness || 0;
-      limits.min_x = 0 - 2*bottom_roughness; // thickness along x
-      limits.max_x = sld_array.reduce(function(t, d) { return t+d.thickness }, 0) + 2*top_roughness;
+      limits.min_x = lower_limit;
+      limits.max_x = upper_limit;
       limits.min_y = sld_array.reduce(function(pre, cur) {
         return Math.min(pre, Math.min.apply(Math, get_column_vals(cur))) }, Infinity);
       limits.max_y = sld_array.reduce(function(pre, cur) {
@@ -369,13 +383,33 @@ var app_init = function(opts) {
       sld_plot.min_x(limits.min_x).max_x(limits.max_x).min_y(limits.min_y).max_y(limits.max_y);
     }
     
+    function filter_meaningless_entries(data) {
+      // The "thickness" of the first row of the SLD table is meaningless, since
+      // the theory has a semi-infinite medium above and below the "sample", and the
+      // first and last rows of the table are used to specify the properties of those 
+      // semi-infinite media.
+      // 
+      // Also, the "roughness" is defined on the top (higher-z) interface for each row, 
+      // so it is meaningful for the first row but not the last.
+      
+      // first row:
+      var first_row = data[0] || {};
+      (first_row.thickness = new Number(0)).meaningless = true;
+      
+      // last row: 
+      var last_row = data[data.length - 1] || {};
+      (last_row.thickness = new Number(0)).meaningless = true;
+      (last_row.roughness = new Number(0)).meaningless = true;
+    }
+    
     function table_draw(data) {
+      filter_meaningless_entries(data);
       var target_id = "sld_table";
       var series = opts.sldplot_series_opts;
       var colnames = series.map(function(s) {return s.label});
       var colids = series.map(function(s) {return s.id});
       var colcolors = series.map(function(s) {return s.color1 || "none"});
-      colnames.splice(0,0,"thickness", "roughness");
+      colnames.splice(0,0,"thickness", "roughness<br>(above)");
       colids.splice(0,0,"thickness", "roughness");
       colcolors.splice(0,0,"none","none");
       var target = d3.select("#" + target_id)
@@ -386,7 +420,7 @@ var app_init = function(opts) {
       colnames.forEach(function(c,i) {
         var id = colids[i],
             bgcolor = colcolors[i];
-        colhead.append("th").text(c).attr("id", colids[i]).style("background-color", bgcolor);
+        colhead.append("th").html(c).attr("id", colids[i]).style("background-color", bgcolor);
       });
       table.append("tbody")
       var sel = target.select("table tbody").selectAll("tr").data(data);
@@ -399,6 +433,7 @@ var app_init = function(opts) {
           colids.forEach(function(c) {
             var entry = tr.append("td")
               .classed("data-cell", true)
+              .classed("meaningless", function(d) { return d[c].meaningless })
               .append("input")
               .classed("data-value", true)
               .attr("data-id", c)
@@ -438,16 +473,17 @@ var app_init = function(opts) {
             .style("color", "red")
             .text("x")
             .on("click", function() {
-              tr.remove();
               data.splice(i, 1);
-              profile_interactor.update()
+              table_draw(data);
+              profile_interactor.update();
               update_profile_limits(data);
               update_roughnesses();
               update_plot_live();
             });
         });
+        
       update_mode();
-    }      
+    }       
         
     function table_update(data) {
       var target_id = "sld_table";

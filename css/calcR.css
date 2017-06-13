@@ -5,12 +5,6 @@ html, body {
   /*font-family: 'Open Sans' !important;*/
 }
 
-#footer {
-    position: absolute;
-    bottom: 0px;
-    text-align: center;
-}
-
 .ui-layout-pane {
     background: #FFFFCC;
 }
@@ -136,6 +130,12 @@ table, th, td {
     border: 2px solid green;
 }
 
+table td.data-cell.meaningless input {
+    opacity: 0.25;
+    pointer-events: none;
+    user-select: none;
+}    
+
 table td.data-cell.edit-mode {
     background-color: white;
     color: DarkBlue;
@@ -147,7 +147,7 @@ table td.data-cell.fit-mode {
     user-select: none;
 }
 
-table td.data-cell.fit-mode.selected {
+table td.data-cell.fit-mode.selected:not(.meaningless) {
     background-color: LightGreen;
     color: DarkGreen;
 }
@@ -181,6 +181,23 @@ text.position-cursor {
 #centerpane, #right {
     background-color: black;
     color: yellow;
+}
+
+div.flex-column {
+   display: -webkit-flex;
+   display: flex;
+   -webkit-flex-direction: column;
+   flex-direction: column;
+   height: 100%;
+}
+
+footer {
+  text-align: center;
+  margin-top: auto;
+}
+
+hr {
+  width: 100%;
 }
 
 hr.betweenplots {
