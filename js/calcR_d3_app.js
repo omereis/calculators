@@ -730,21 +730,22 @@ var app_init = function(opts) {
       var fitControls = d3.select("#" + target_id).append('div')
         .classed("fit controls", true)
         .style("padding-top", "5px")
-        
-      fitControls.append("button")
-        .text("start fit")
-        .classed("ui-button ui-corner-all ui-widget", true)
-        .on("click", fit)
-        
-      fitControls.append("label")
+
+        fitControls.append("label")
         .text(" log:")
       
       fitControls.append("div")
         .append("pre")
         .classed("fit log", true)
-
-      update_mode.call({value: "edit"});
       
+      modeControls.append("button")
+        .text("Start Fit")
+        .attr("id", "idStartFitBtn")
+        .classed("ui-button ui-corner-all ui-widget", true)
+        .on("click", fit)
+
+        update_mode.call({value: "edit"});
+
       $(modeControls.node()).controlgroup();
     }
     
@@ -755,8 +756,16 @@ var app_init = function(opts) {
         return;
       } 
       var mode = modechoice.attr("value");
-      d3.select("div.fit.controls").style("visibility", (mode == "edit") ? "hidden" : "visible");
+      var fVisible = (mode == "edit") ? "hidden" : "visible";
+
+      d3.select("div.fit.controls").style("visibility", fVisible);
+      var btn;
+      btn = document.getElementById("idStartFitBtn");
+      if (btn) {
+        btn.style.visibility = fVisible;
+      }
       var data_table = d3.select("div#sld_table");
+
       data_table.selectAll("td.data-cell")
         .classed("edit-mode", (mode == "edit"))
         .classed("fit-mode",  (mode == "fit"));
