@@ -764,22 +764,44 @@ var app_init = function(opts) {
       for (n=0 ; n < lstrResTblHead.length ; n++)
         row.append("th").html(lstrResTblHead[n]);
       row = thead.append("tr").style("background-color", "rgb(175, 175, 175)").style("color", "black");
-      for (n=0 ; n < lstrResTblHead.length ; n++)
-        row.append("td").html(lstrResTblHead[n]);
-      results_table = table;
-      var rowData = {selected: false, date: "2/7/2019", time: "9:41", code: "abanibi", comment: "just another test"};
-      addResultRow (rowData);
+/*
+      for (n=0 ; n < lstrResTblHead.length ; n++) {
+        cell_txt = lstrResTblHead[n]
+//        cell = row.append("td").html(cell_txt);
+        if (n > 0) {
+          row.append("td").html(cell_txt);
+        }
+        else {
+//          cell = row.append("td").html(cell_txt);
+          cell.append("td")
+            .append("button")
+            .attr("type", "checkbox")
+            .style("color", "red")
+          //.text("x")
+          .on("click", function() {
+            alert("Clicked");
+          }
+        }
+      }
+*/
+        results_table = table;
     }
 
     function addResultRow (rowData) {
-      var res_tbl = results_table;//document.getElementById("results_table");
-      var thead = res_tbl.append("thead").attr("width", "100%");
+      var thead = results_table.append("thead").attr("width", "100%");
       var row = thead.append("tr").style("background-color", "rgb(175, 175, 175)").style("color", "black");
-      for (var n in rowData) {
-        row.append("td").html(rowData[n]);
-        console.log(rowData[n]);
-      }
-      //row.append("td").html(rowData.select, rowData.date, rowData.time, rowData.code, rowData.Comment);
+      row.append("td")
+        .append("input")
+        .attr("type", "checkbox")
+        .style("color", "red")
+        .on("click", function() {
+          alert("Clicked");
+        });
+        row.append("td").html(rowData.date);
+        row.append("td").append("input").attr("type", "text");
+        row.append("td").append("button")
+          .attr("type", "button")
+          .text("+after");
     }
 
     function makeModeControls(target_id) {
