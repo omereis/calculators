@@ -703,10 +703,88 @@ var app_init = function(opts) {
     makeFileControls('file_controls');
     $("#file_controls").controlgroup();
     
+    function addCodeInput (control) {
+      control
+        .append("label")
+        .text("Code")
+        .append("input")
+          .attr("type", "text")
+          .attr("name", "code")
+          .attr("value", "my code")
+          //.attr("width", "50px")
+          .style("width", "6em")
+          ;
+    }
+
+    function addRemoteFitButton (control) {
+      control
+        .append("button")
+        .text("MP Fit")
+          .attr("id", "idMultiProcsFit")
+          .classed("ui-button ui-corner-all ui-widget", true)
+          .style("height", "30px")
+          .style("padding-top", "1px")
+          .style("padding-left", "1px")
+          .style("padding-right", "1px")
+          .style("width", "4em")
+          .on("click", multiProcsFit);
+    }
+
+    function addDelRemoteResultsButton (control) {
+      control
+        .append("button")
+        .text("Del Results")
+          .attr("id", "idDelMultiProcsFitResults")
+          .style("padding-left", "1px")
+          .style("padding-right", "1px")
+          .style("width", "6em")
+          .style("height", "30px")
+          .style("padding-top", "1px")
+          .classed("ui-button ui-corner-all ui-widget", true)
+          .on("click", multiProcsFit);
+    }
+
+    function makeRemoteProcessingControls (target_id) {
+      var remprocControls = d3.select("#" + target_id).append('div')
+      addCodeInput (remprocControls);
+      addRemoteFitButton (remprocControls);
+      addDelRemoteResultsButton (remprocControls);
+      //add 
+    }
+
+    var lstrResTblHead = ["Select", "Date", "Time", "Code", "Comment"];
+    var results_table;
+
+    function addRemoteResultsTable (target_id) {
+      var remprocControls = d3.select("#" + target_id).append('div')
+      var table = remprocControls.append("table").attr("id", "results_table");
+      var thead = table.append("thead").attr("width", "100%");
+      var n, row = thead.append("tr").style("background-color", "rgb(75, 75, 75)");
+
+      for (n=0 ; n < lstrResTblHead.length ; n++)
+        row.append("th").html(lstrResTblHead[n]);
+      row = thead.append("tr").style("background-color", "rgb(175, 175, 175)").style("color", "black");
+      for (n=0 ; n < lstrResTblHead.length ; n++)
+        row.append("td").html(lstrResTblHead[n]);
+      results_table = table;
+      var rowData = {selected: false, date: "2/7/2019", time: "9:41", code: "abanibi", comment: "just another test"};
+      addResultRow (rowData);
+    }
+
+    function addResultRow (rowData) {
+      var res_tbl = results_table;//document.getElementById("results_table");
+      var thead = res_tbl.append("thead").attr("width", "100%");
+      var row = thead.append("tr").style("background-color", "rgb(175, 175, 175)").style("color", "black");
+      for (var n in rowData) {
+        row.append("td").html(rowData[n]);
+        console.log(rowData[n]);
+      }
+      //row.append("td").html(rowData.select, rowData.date, rowData.time, rowData.code, rowData.Comment);
+    }
+
     function makeModeControls(target_id) {
       var modeControls = d3.select("#" + target_id).append('div')
           .classed("mode controls", true)
-      
       
       modeControls
         .append("label")
@@ -785,7 +863,8 @@ var app_init = function(opts) {
     
     makeModeControls('fit_controls');
     //update_plot_live();
-    
+    makeRemoteProcessingControls ("remote_processing");
+    addRemoteResultsTable ('results_table');
     //update_plot(0, initial_sld, 'xy');
     
     function set_data(raw_data) {
@@ -1055,7 +1134,6 @@ var app_init = function(opts) {
       return output;
     }
             
-    
     function fit() {
       var extra_params = opts.fitting.extra_params.map(function(e,i) { 
         var input = d3.select("input#" + e.label);
@@ -1089,6 +1167,12 @@ var app_init = function(opts) {
       update_plot_live();
       
       d3.select("pre.fit.log").text(fit_report(result, to_fit));    
+    }
+
+    function multiProcsFit () {
+      //alert("Profermed Multi Processing Fit")
+      var rowData = {selected: false, date: "2/7/2019", time: "9:41", code: "abanibi", comment: "just another test"};
+      addResultRow (rowData);
     }
     
     var current_item = d3.selectAll('input.plot-choice[value="' + current_choice + '"]');
