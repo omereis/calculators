@@ -741,7 +741,7 @@ var app_init = function(opts) {
           .style("height", "30px")
           .style("padding-top", "1px")
           .classed("ui-button ui-corner-all ui-widget", true)
-          .on("click", multiProcsFit);
+          .on("click", multiProcsDelRows);
     }
 
     function makeRemoteProcessingControls (target_id) {
@@ -753,55 +753,35 @@ var app_init = function(opts) {
     }
 
     var lstrResTblHead = ["Select", "Date", "Time", "Code", "Comment"];
-    var results_table;
+    var g_results_table, g_row_counter;
 
     function addRemoteResultsTable (target_id) {
       var remprocControls = d3.select("#" + target_id).append('div')
       var table = remprocControls.append("table").attr("id", "results_table");
-      var thead = table.append("thead").attr("width", "100%");
-      var n, row = thead.append("tr").style("background-color", "rgb(75, 75, 75)");
+      var thead = table.append("thead");
+      table.append("tbody");
+      var n, row = thead.append("tr").classed ("th_result", true);//style("background-color", "rgb(75, 75, 75)");
+      g_row_counter = 0;
 
       for (n=0 ; n < lstrResTblHead.length ; n++)
         row.append("th").html(lstrResTblHead[n]);
-      row = thead.append("tr").style("background-color", "rgb(175, 175, 175)").style("color", "black");
-/*
-      for (n=0 ; n < lstrResTblHead.length ; n++) {
-        cell_txt = lstrResTblHead[n]
-//        cell = row.append("td").html(cell_txt);
-        if (n > 0) {
-          row.append("td").html(cell_txt);
-        }
-        else {
-//          cell = row.append("td").html(cell_txt);
-          cell.append("td")
-            .append("button")
-            .attr("type", "checkbox")
-            .style("color", "red")
-          //.text("x")
-          .on("click", function() {
-            alert("Clicked");
-          }
-        }
-      }
-*/
-        results_table = table;
+        g_results_table = table;
     }
 
     function addResultRow (rowData) {
-      var thead = results_table.append("thead").attr("width", "100%");
-      var row = thead.append("tr").style("background-color", "rgb(175, 175, 175)").style("color", "black");
+      var thead = g_results_table.append("thead").attr("width", "100%");
+      var row = thead.append("tr").classed ("tr_result", true);
+      
       row.append("td")
         .append("input")
         .attr("type", "checkbox")
-        .style("color", "red")
         .on("click", function() {
-          alert("Clicked");
+          console.log("Clicked");
         });
-        row.append("td").html(rowData.date);
-        row.append("td").append("input").attr("type", "text");
-        row.append("td").append("button")
-          .attr("type", "button")
-          .text("+after");
+        row.append("td").html(rowData.date).classed("td_result", true);
+        row.append("td").html(rowData.time).classed("td_result", true);
+        row.append("td").html(rowData.code).classed("td_result", true);
+        row.append("td").html(rowData.comment).classed("td_result", true);
     }
 
     function makeModeControls(target_id) {
@@ -1192,11 +1172,19 @@ var app_init = function(opts) {
     }
 
     function multiProcsFit () {
-      //alert("Profermed Multi Processing Fit")
       var rowData = {selected: false, date: "2/7/2019", time: "9:41", code: "abanibi", comment: "just another test"};
       addResultRow (rowData);
     }
-    
+
+    function multiProcsDelRows () {
+      var res_tbl = d3.select("#" + "results_table");
+      var body = res_tbl.select('tbody');
+      var hed = res_tbl.select('thrad');
+      var r1=body.selectAll('tr');
+      var r2=hed.selectAll('tr');
+      
+      console.log("clicked");
+    }
     var current_item = d3.selectAll('input.plot-choice[value="' + current_choice + '"]');
     current_item.property("checked", true);
     //current_item.on("change").call(current_item.node());
