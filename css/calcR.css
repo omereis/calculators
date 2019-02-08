@@ -225,3 +225,20 @@ hr.betweenplots {
 .ui-dialog .footer {
     font-size: 80%;
 }
+
+.th_result {
+    padding: 3px 2px 3px 2px;
+    background-color: rgb(175, 175, 175);
+    color: black;
+}
+
+.tr_result {
+    padding: 3px 2px 3px 2px;
+    background-color: rgb(175, 175, 175);
+    color: black;
+}
+
+.td_result {
+    padding: 2px 3px 2px 3px;
+}
+
