@@ -733,7 +733,7 @@ var app_init = function(opts) {
     function addDelRemoteResultsButton (control) {
       control
         .append("button")
-        .text("Del Results")
+        .text("Delete")
           .attr("id", "idDelMultiProcsFitResults")
           .style("padding-left", "1px")
           .style("padding-right", "1px")
@@ -769,14 +769,18 @@ var app_init = function(opts) {
     }
 
     function addResultRow (rowData) {
-      var thead = g_results_table.append("thead").attr("width", "100%");
-      var row = thead.append("tr").classed ("tr_result", true);
+      //var thead = g_results_table.append("thead").attr("width", "100%");
+      //var thead = g_results_table.select("thead");//.attr("width", "100%");
+      var tbody = g_results_table.select("tbody");//.attr("width", "100%");
+      //var row = thead.append("tr").classed ("tr_result", true);
+      var row = tbody.append("tr").classed ("tr_result", true);
       
       row.append("td")
         .append("input")
         .attr("type", "checkbox")
+        .attr("id", "results_checkbox")
         .on("click", function() {
-          console.log("Clicked");
+          console.log("Checked: " + this.checked);
         });
         row.append("td").html(rowData.date).classed("td_result", true);
         row.append("td").html(rowData.time).classed("td_result", true);
@@ -1176,14 +1180,60 @@ var app_init = function(opts) {
       addResultRow (rowData);
     }
 
+    
+
     function multiProcsDelRows () {
+      var columns = ["select", "Date", "Time", "Code", "Comment"];
       var res_tbl = d3.select("#" + "results_table");
+      var d=res_tbl.selectAll('#results_checkbox');
+      var tbody = res_tbl.select('tbody');
+      var rows = tbody.selectAll("tr");
+      var cells = rows.selectAll("td");
+      var sel_all = cells.select('#results_checkbox');
+      //var sel_all = cells.select('#results_checkbox');
+      for (var n=0 ; n < sel_all._groups.length ; n++) {
+        try {
+          var fDel  = sel_all._groups[n][0].checked;
+          var op = sel_all._groups[n][0].checked ? "delete" : "keep";
+          console.log("Row #" + (n+1) + ": " + op);
+        }
+        catch (err) {
+          console.log(err.message);
+        }
+      }
+      try {
+        cells.data(function(p1, p2, p3, p4) {
+          return columns.map(function(column) {
+              return {column: column, value: column};
+              //return {column: column, value: row[column]};
+          });
+        });
+      }
+      catch (err) {
+        console.log(err.message);
+      }
+      
+      var cb = res_tbl.selectAll('tr').selectAll('td').selectAll('checkbox')
+      var table_data;
+      table_data = d3.select("div#results_table table tbody");
+      var sels = table_data.selectAll("tr").selectAll('td');
+      table_data.selectAll("tr").each(function(row, l) {
+        try {
+          console.log("row:" + row);
+        }
+        catch (err) {
+          console.log("Error: " + err);
+        }
+        
+      });
+//      var data = res_tbl.selectAll('tr');
       var body = res_tbl.select('tbody');
       var hed = res_tbl.select('thrad');
       var r1=body.selectAll('tr');
       var r2=hed.selectAll('tr');
-      
-      console.log("clicked");
+      var data_table = d3.select("div#sld_table table tbody");
+      var td=res_tbl.selectAll('tr').selectAll('td')
+      console.log(td);
     }
     var current_item = d3.selectAll('input.plot-choice[value="' + current_choice + '"]');
     current_item.property("checked", true);
