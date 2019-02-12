@@ -773,7 +773,8 @@ var app_init = function(opts) {
       //var thead = g_results_table.select("thead");//.attr("width", "100%");
       var tbody = g_results_table.select("tbody");//.attr("width", "100%");
       //var row = thead.append("tr").classed ("tr_result", true);
-      var row = tbody.append("tr").classed ("tr_result", true);
+      //var row = tbody.append("tr").classed ("tr_result", true);
+      var row = tbody.append("tr").attr ("id", "tr_result");//, true);
       
       row.append("td")
         .append("input")
@@ -1180,60 +1181,19 @@ var app_init = function(opts) {
       addResultRow (rowData);
     }
 
-    
-
     function multiProcsDelRows () {
-      var columns = ["select", "Date", "Time", "Code", "Comment"];
-      var res_tbl = d3.select("#" + "results_table");
-      var d=res_tbl.selectAll('#results_checkbox');
-      var tbody = res_tbl.select('tbody');
-      var rows = tbody.selectAll("tr");
-      var cells = rows.selectAll("td");
-      var sel_all = cells.select('#results_checkbox');
-      //var sel_all = cells.select('#results_checkbox');
-      for (var n=0 ; n < sel_all._groups.length ; n++) {
+      var rows = d3.select("#" + "results_table").select('tbody').selectAll("tr");
+      var cboxes = rows.selectAll("td").select('#results_checkbox');
+      for (var n=0 ; n < cboxes._groups.length ; n++) {
         try {
-          var fDel  = sel_all._groups[n][0].checked;
-          var op = sel_all._groups[n][0].checked ? "delete" : "keep";
-          console.log("Row #" + (n+1) + ": " + op);
+          if (cboxes._groups[n][0].checked) {
+            rows._groups[0][n].remove();
+          }
         }
         catch (err) {
           console.log(err.message);
         }
       }
-      try {
-        cells.data(function(p1, p2, p3, p4) {
-          return columns.map(function(column) {
-              return {column: column, value: column};
-              //return {column: column, value: row[column]};
-          });
-        });
-      }
-      catch (err) {
-        console.log(err.message);
-      }
-      
-      var cb = res_tbl.selectAll('tr').selectAll('td').selectAll('checkbox')
-      var table_data;
-      table_data = d3.select("div#results_table table tbody");
-      var sels = table_data.selectAll("tr").selectAll('td');
-      table_data.selectAll("tr").each(function(row, l) {
-        try {
-          console.log("row:" + row);
-        }
-        catch (err) {
-          console.log("Error: " + err);
-        }
-        
-      });
-//      var data = res_tbl.selectAll('tr');
-      var body = res_tbl.select('tbody');
-      var hed = res_tbl.select('thrad');
-      var r1=body.selectAll('tr');
-      var r2=hed.selectAll('tr');
-      var data_table = d3.select("div#sld_table table tbody");
-      var td=res_tbl.selectAll('tr').selectAll('td')
-      console.log(td);
     }
     var current_item = d3.selectAll('input.plot-choice[value="' + current_choice + '"]');
     current_item.property("checked", true);
