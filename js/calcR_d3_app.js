@@ -703,14 +703,14 @@ var app_init = function(opts) {
     makeFileControls('file_controls');
     $("#file_controls").controlgroup();
     
-    function addCodeInput (control) {
+    function addTagInput (control) {
       control
         .append("label")
-        .text("Code")
+        .text("Tag ")
         .append("input")
           .attr("type", "text")
-          .attr("name", "code")
-          .attr("value", "my code")
+          .attr("name", "tag")
+          .attr("value", "my tag")
           //.attr("width", "50px")
           .style("width", "6em")
           ;
@@ -746,13 +746,13 @@ var app_init = function(opts) {
 
     function makeRemoteProcessingControls (target_id) {
       var remprocControls = d3.select("#" + target_id).append('div')
-      addCodeInput (remprocControls);
+      addTagInput (remprocControls);
       addRemoteFitButton (remprocControls);
       addDelRemoteResultsButton (remprocControls);
       //add 
     }
 
-    var lstrResTblHead = ["Select", "Date", "Time", "Code", "Comment"];
+    var lstrResTblHead = ["Select", "Date", "Time", "Tag", "Comment"];
     var g_results_table, g_row_counter;
 
     function addRemoteResultsTable (target_id) {
@@ -782,10 +782,11 @@ var app_init = function(opts) {
         .attr("id", "results_checkbox")
         .on("click", function() {
           console.log("Checked: " + this.checked);
+          console.log(words());
         });
         row.append("td").html(rowData.date).classed("td_result", true);
         row.append("td").html(rowData.time).classed("td_result", true);
-        row.append("td").html(rowData.code).classed("td_result", true);
+        row.append("td").html(rowData.tag).classed("td_result", true);
         row.append("td").html(rowData.comment).classed("td_result", true);
     }
 
@@ -1177,7 +1178,7 @@ var app_init = function(opts) {
     }
 
     function multiProcsFit () {
-      var rowData = {selected: false, date: "2/7/2019", time: "9:41", code: "abanibi", comment: "just another test"};
+      var rowData = {selected: false, date: "2/7/2019", time: "9:41", tag: "abanibi", comment: "just another test"};
       addResultRow (rowData);
     }
 
