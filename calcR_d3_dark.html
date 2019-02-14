@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="css/layout-default-latest.css" />
     <link rel="stylesheet" type="text/css" href="css/calcR.css" />
     <link href="//code.jquery.com/ui/1.12.0/themes/ui-darkness/jquery-ui.css" type="text/css" rel="stylesheet" />
+
 <!-- Reference jQuery and jQuery UI from the CDN. Remember that the order of these two elements is important -->
     <script src="//code.jquery.com/jquery-1.12.4.min.js" type="text/javascript"></script>
     <script src="//code.jquery.com/ui/1.12.0/jquery-ui.min.js" type="text/javascript"></script>
@@ -22,9 +23,14 @@
     <script src="../d3-science-v4/lib/xy-chart.js" charset="utf-8"></script>
     <script src="../d3-science-v4/lib/profile-interactor.js"></script>
     <script src="../d3-science-v4/lib/monotonic-function-interactor.js"></script>
+
+<!--
+      <script src="https://requirejs.org/docs/release/2.3.5/minified/require.js"></script>
+-->
     
+    <script type="text/javascript" src="js/random_words.js"></script>
     <script src="js/calcR_d3_app.js" charset="utf-8"></script>
-   
+
 <script type="text/javascript">
     var THETA_M = Math.PI * 3.0 / 2.0; // 270 degrees by default
     var AGUIDE = 270;
@@ -93,8 +99,9 @@
     <div id="top_panel" class="ui-layout-north">
         Load (*.refl) datafile: <input type="file" multiple="false" id="datafile" name="datafile" />
         <a href="" id="pyscript_data_uri"></a>
-        <input type="button" value="generate Refl1D script" id="scriptbutton">
+        <input type="button" value="Generate Refl1D script" id="scriptbutton">
         <input type="text" value="refl1d_script.py" width=20 id="scriptname">
+        <input type="checkbox" id="cboxDebug" value="Debug">Debug
         <button id="show_doc" style="float:right;">help</button>
     </div>
     <div id="centerpane" class="ui-layout-center">
@@ -108,8 +115,25 @@
           <div id='q_controls'></div>
           <div id='sld_table'></div>
           <div id='file_controls'></div>
-          <hr>
           <div id='fit_controls'></div>
+          <hr>
+          <div id='remote_processing' style="text-align: center;"></div>
+          <hr>
+          <div id='results_table'></div>
+          <!--<div id='results_table' style="text-align: center;">Results Table<br></div>-->
+          <!--<div id='results_table' style="text-align: center;">Results Table<br>
+            <input type="checkbox">Check out this box</input>
+            <table>
+              <tr style="background-color: rgb(75, 75, 75);">
+                <th width="100px">Select</th><th>Date</th><th>Time</th><th>Code</th><th>Comment</th>
+              </tr>
+              <tr style="background-color: rgb(175, 175, 175);">
+                <td>X</td><td>Jan. 26, 1990</td><td>" 06:15 "</td><td>Ran</td><td>Eisenberg</td>
+              </tr>
+              </table>
+          </div>-->
+
+          <hr>
           <footer></footer>
       </div>
     </div>

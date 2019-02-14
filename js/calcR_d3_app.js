@@ -703,6 +703,18 @@ var app_init = function(opts) {
     makeFileControls('file_controls');
     $("#file_controls").controlgroup();
     
+    function makeRemoteProcessingControls (target_id) {
+      var remprocControls = d3.select("#" + target_id).append('div')
+      addTagInput (remprocControls);
+      addDelRemoteResultsButton (remprocControls);
+      addRemoteFitButton (remprocControls);
+      //add 
+      update_mode();
+    }
+
+    var lstrResTblHead = ["Select", "Date", "Time", "Tag", "Comment"];
+    var g_results_table, g_row_counter;
+
     function addTagInput (control) {
       control
         .append("label")
@@ -710,7 +722,8 @@ var app_init = function(opts) {
         .append("input")
           .attr("type", "text")
           .attr("name", "tag")
-          .attr("value", "my tag")
+          //.attr("value", "my tag")
+          .attr("value", words())
           //.attr("width", "50px")
           .style("width", "6em")
           ;
@@ -722,8 +735,8 @@ var app_init = function(opts) {
         .text("MP Fit")
           .attr("id", "idMultiProcsFit")
           .classed("ui-button ui-corner-all ui-widget", true)
-          .style("height", "30px")
-          .style("padding-top", "1px")
+          .style("height", "26px")
+          .style("padding-top", "0px")
           .style("padding-left", "1px")
           .style("padding-right", "1px")
           .style("width", "4em")
@@ -743,17 +756,6 @@ var app_init = function(opts) {
           .classed("ui-button ui-corner-all ui-widget", true)
           .on("click", multiProcsDelRows);
     }
-
-    function makeRemoteProcessingControls (target_id) {
-      var remprocControls = d3.select("#" + target_id).append('div')
-      addTagInput (remprocControls);
-      addRemoteFitButton (remprocControls);
-      addDelRemoteResultsButton (remprocControls);
-      //add 
-    }
-
-    var lstrResTblHead = ["Select", "Date", "Time", "Tag", "Comment"];
-    var g_results_table, g_row_counter;
 
     function addRemoteResultsTable (target_id) {
       var remprocControls = d3.select("#" + target_id).append('div')
@@ -845,11 +847,15 @@ var app_init = function(opts) {
       var fVisible = (mode == "edit") ? "hidden" : "visible";
 
       d3.select("div.fit.controls").style("visibility", fVisible);
+      setButtonVisible ("idStartFitBtn", fVisible);
+      setButtonVisible ("idMultiProcsFit", fVisible);
+/*
       var btn;
       btn = document.getElementById("idStartFitBtn");
       if (btn) {
         btn.style.visibility = fVisible;
       }
+*/
       var data_table = d3.select("div#sld_table");
 
       data_table.selectAll("td.data-cell")
@@ -869,12 +875,23 @@ var app_init = function(opts) {
       }
     }
     
+    function setButtonVisible(btnID, fVisible) {
+      var btn, btnD3;
+
+      btn = document.getElementById(btnID);//"idStartFitBtn");
+      try {
+        btn.style.visibility = fVisible;
+      }
+      catch (err) {
+        console.log(err.message);
+      }
+    }
+
     makeModeControls('fit_controls');
     //update_plot_live();
     makeRemoteProcessingControls ("remote_processing");
     addRemoteResultsTable ('results_table');
     //update_plot(0, initial_sld, 'xy');
-    
     function set_data(raw_data) {
       var series_lookup = opts.series_lookup;
         var x, y, y_out, row;
@@ -1142,6 +1159,20 @@ var app_init = function(opts) {
       return output;
     }
             
+    function getCheckboxState (cboxID) {
+      var cbox = d3.select("#" + cboxID);
+      var cboxState;
+
+      try {
+        cboxState = cbox._groups[0][0].checked ? 1 : 0;
+      }
+      catch (err) {
+        console.log(err.message);
+        cboxState = -1;
+      }
+      return (cboxState);
+    }
+
     function fit() {
       var extra_params = opts.fitting.extra_params.map(function(e,i) { 
         var input = d3.select("input#" + e.label);
@@ -1156,14 +1187,14 @@ var app_init = function(opts) {
       var ws = JSON.stringify(opts.data.dR_list.map(function(dy) {return 1.0/dy}));
       var cs = JSON.stringify(params.c);
       var ss = JSON.stringify(params.s);
-      
+
       var lower_bound = JSON.stringify(params.bndl).replace(/null/g, "-Inf");
       var upper_bound = JSON.stringify(params.bndu).replace(/null/g, "+Inf");
       console.log({xs: xs, ys: ys, ws: ws, cs: cs, ss: ss, upp: upper_bound, low: lower_bound});
       var fit_func = opts.fit_func
       var str_result = Module[opts.fitting.funcname].call(null, xs, ys, ws, cs, ss, lower_bound, upper_bound);
       var result = JSON.parse(str_result);
-      
+
       var new_sld = params_to_sld(result);
       //initial_sld.splice(0, initial_sld.length + 1);
       $.extend(true, initial_sld, new_sld.sld);
@@ -1173,7 +1204,7 @@ var app_init = function(opts) {
       profile_interactor.update();
       sld_plot.resetzoom();
       update_plot_live();
-      
+
       d3.select("pre.fit.log").text(fit_report(result, to_fit));    
     }
 
