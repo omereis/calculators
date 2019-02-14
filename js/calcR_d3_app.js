@@ -720,10 +720,11 @@ var app_init = function(opts) {
         .append("label")
         .text("Tag ")
         .append("input")
+          .attr("id", "idMultiProcsTag")
           .attr("type", "text")
           .attr("name", "tag")
           //.attr("value", "my tag")
-          .attr("value", words())
+          .attr("value", "")//words())
           //.attr("width", "50px")
           .style("width", "6em")
           ;
@@ -848,14 +849,7 @@ var app_init = function(opts) {
 
       d3.select("div.fit.controls").style("visibility", fVisible);
       setButtonVisible ("idStartFitBtn", fVisible);
-      setButtonVisible ("idMultiProcsFit", fVisible);
-/*
-      var btn;
-      btn = document.getElementById("idStartFitBtn");
-      if (btn) {
-        btn.style.visibility = fVisible;
-      }
-*/
+//      setButtonVisible ("idMultiProcsFit", fVisible);
       var data_table = d3.select("div#sld_table");
 
       data_table.selectAll("td.data-cell")
@@ -1208,8 +1202,39 @@ var app_init = function(opts) {
       d3.select("pre.fit.log").text(fit_report(result, to_fit));    
     }
 
+    function getUserTag () {
+      return (words());
+    }
+
+    var g_counter=1;
+
+    function getCurrentDate () {
+      var dt = new Date();
+      return (dt.getMonth() + 1 + "/" + dt.getDate() + "/" + dt.getYear() + 119);
+    }
+
+    function getCurrentTime () {
+      var dt = new Date();
+      return (dt.getHours() + ":" + (dt.getMinutes() < 10 ? "0" + dt.getMinutes() : dt.getMinutes()) + ":" + dt.getSeconds());
+    }
+
+    function getUserRowTag () {
+      var tag, edtTag = document.getElementById("idMultiProcsTag");
+      if (edtTag.value.length == 0) {
+        tag = getUserTag ();
+        document.getElementById("idMultiProcsTag").value = tag;
+      }
+      else
+        tag = edtTag.value;
+      return (tag = tag + "_" + g_counter++);
+    }
+
     function multiProcsFit () {
       var rowData = {selected: false, date: "2/7/2019", time: "9:41", tag: "abanibi", comment: "just another test"};
+
+      rowData.tag = getUserRowTag ();
+      rowData.date = getCurrentDate();
+      rowData.time = getCurrentTime ();
       addResultRow (rowData);
     }
 
