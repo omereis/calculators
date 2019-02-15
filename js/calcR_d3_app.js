@@ -712,7 +712,7 @@ var app_init = function(opts) {
       update_mode();
     }
 
-    var lstrResTblHead = ["Select", "Date", "Time", "Tag", "Comment"];
+    var lstrResTblHead = ["Select", "Start Time", "Tag", "End Time"];
     var g_results_table, g_row_counter;
 
     function addTagInput (control) {
@@ -766,17 +766,14 @@ var app_init = function(opts) {
       var n, row = thead.append("tr").classed ("th_result", true);//style("background-color", "rgb(75, 75, 75)");
       g_row_counter = 0;
 
-      for (n=0 ; n < lstrResTblHead.length ; n++)
+      for (n=0 ; n < lstrResTblHead.length ; n++) {
         row.append("th").html(lstrResTblHead[n]);
-        g_results_table = table;
+      }
+      g_results_table = table;
     }
 
     function addResultRow (rowData) {
-      //var thead = g_results_table.append("thead").attr("width", "100%");
-      //var thead = g_results_table.select("thead");//.attr("width", "100%");
       var tbody = g_results_table.select("tbody");//.attr("width", "100%");
-      //var row = thead.append("tr").classed ("tr_result", true);
-      //var row = tbody.append("tr").classed ("tr_result", true);
       var row = tbody.append("tr").attr ("id", "tr_result");//, true);
       
       row.append("td")
@@ -787,10 +784,11 @@ var app_init = function(opts) {
           console.log("Checked: " + this.checked);
           console.log(words());
         });
-        row.append("td").html(rowData.date).classed("td_result", true);
-        row.append("td").html(rowData.time).classed("td_result", true);
+        row.append("td").html(rowData.date + ", " + rowData.time).classed("td_result", true);
+//        row.append("td").html(rowData.time).classed("td_result", true);
         row.append("td").html(rowData.tag).classed("td_result", true);
-        row.append("td").html(rowData.comment).classed("td_result", true);
+        row.append("td").html(rowData.comment).attr("id","result_comment").classed("td_result", true);
+        return (row);
     }
 
     function makeModeControls(target_id) {
@@ -849,7 +847,7 @@ var app_init = function(opts) {
 
       d3.select("div.fit.controls").style("visibility", fVisible);
       setButtonVisible ("idStartFitBtn", fVisible);
-//      setButtonVisible ("idMultiProcsFit", fVisible);
+      setButtonVisible ("idMultiProcsFit", fVisible);
       var data_table = d3.select("div#sld_table");
 
       data_table.selectAll("td.data-cell")
@@ -884,7 +882,7 @@ var app_init = function(opts) {
     makeModeControls('fit_controls');
     //update_plot_live();
     makeRemoteProcessingControls ("remote_processing");
-    addRemoteResultsTable ('results_table');
+    addRemoteResultsTable ('mp_results');
     //update_plot(0, initial_sld, 'xy');
     function set_data(raw_data) {
       var series_lookup = opts.series_lookup;
@@ -1189,6 +1187,7 @@ var app_init = function(opts) {
       var str_result = Module[opts.fitting.funcname].call(null, xs, ys, ws, cs, ss, lower_bound, upper_bound);
       var result = JSON.parse(str_result);
 
+      document.getElementById("results_string").value = str_result;
       var new_sld = params_to_sld(result);
       //initial_sld.splice(0, initial_sld.length + 1);
       $.extend(true, initial_sld, new_sld.sld);
@@ -1210,7 +1209,7 @@ var app_init = function(opts) {
 
     function getCurrentDate () {
       var dt = new Date();
-      return (dt.getMonth() + 1 + "/" + dt.getDate() + "/" + dt.getYear() + 119);
+      return (dt.getMonth() + 1 + "/" + dt.getDate() + "/" + (dt.getYear() + 1900));
     }
 
     function getCurrentTime () {
@@ -1229,13 +1228,61 @@ var app_init = function(opts) {
       return (tag = tag + "_" + g_counter++);
     }
 
+    function uploadUserParams (xs, ys, ws, cs, ss, lower_bound, upper_bound) {
+      var obj = new Object();
+      var extra_params = opts.fitting.extra_params.map(function(e,i) { 
+        var input = d3.select("input#" + e.label);
+        return (input.empty()) ? 0 : +(input.node().value);
+      });
+      var to_fit = get_to_fit().reverse();
+      var params = sld_to_params(extra_params, to_fit);
+      obj.xs = JSON.stringify(opts.data.kz_list); // qz to kz
+      obj.ys = JSON.stringify(opts.data.R_list);
+      obj.ws = JSON.stringify(opts.data.dR_list.map(function(dy) {return 1.0/dy}));
+      obj.cs = JSON.stringify(params.c);
+      obj.ss = JSON.stringify(params.s);
+
+      obj.lower_bound = JSON.stringify(params.bndl).replace(/null/g, "-Inf");
+      obj.upper_bound = JSON.stringify(params.bndu).replace(/null/g, "+Inf");
+      console.log({xs: obj.xs, ys: obj.ys, ws: obj.ws, cs: obj.cs, ss: obj.ss, upper_bound: obj.upper_bound, lower_bound: obj.lower_bound});
+      return (obj);
+    }
+
     function multiProcsFit () {
-      var rowData = {selected: false, date: "2/7/2019", time: "9:41", tag: "abanibi", comment: "just another test"};
+      var objInParams;
+      var rowData = {selected: false, date: "2/7/2019", time: "9:41", tag: "", comment: ""};
 
       rowData.tag = getUserRowTag ();
       rowData.date = getCurrentDate();
       rowData.time = getCurrentTime ();
-      addResultRow (rowData);
+      var row = addResultRow (rowData);
+      objInParams = uploadUserParams ();
+      var str_result = Module[opts.fitting.funcname].call(null, objInParams.xs, objInParams.ys, objInParams.ws, objInParams.cs, objInParams.ss, objInParams.lower_bound, objInParams.upper_bound);
+      updateCompletionDate (row);
+      saveResults (str_result);
+      document.getElementById("results_string").value = str_result;
+      objInParams.row = row;
+    }
+
+    function updateCompletionDate (row) {
+      row._groups[0][0].cells[3].innerText = getCurrentDate() + ", " + getCurrentTime ();
+    }
+
+    function saveResults (str_result)
+    {
+      var result = JSON.parse(str_result);
+      document.getElementById("results_string").value = str_result;
+      var new_sld = params_to_sld(result);
+    //initial_sld.splice(0, initial_sld.length + 1);
+      $.extend(true, initial_sld, new_sld.sld);
+    //d3.selectAll("div#sld_table table tbody tr").data(initial_sld);
+      table_update(initial_sld);
+      update_profile_limits(initial_sld);
+      profile_interactor.update();
+      sld_plot.resetzoom();
+      update_plot_live();
+
+      d3.select("pre.fit.log").text(fit_report(result, to_fit));    
     }
 
     function multiProcsDelRows () {
@@ -1255,7 +1302,7 @@ var app_init = function(opts) {
     var current_item = d3.selectAll('input.plot-choice[value="' + current_choice + '"]');
     current_item.property("checked", true);
     //current_item.on("change").call(current_item.node());
-    
+
     $.get("doc/calcR.html", function(data) { $("div#documentation_popup").html(data); });
     $("button#show_doc").on("click", function() { $("div#documentation_popup").dialog({
         modal: true,
