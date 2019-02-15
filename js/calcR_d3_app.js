@@ -1187,7 +1187,6 @@ var app_init = function(opts) {
       var str_result = Module[opts.fitting.funcname].call(null, xs, ys, ws, cs, ss, lower_bound, upper_bound);
       var result = JSON.parse(str_result);
 
-      document.getElementById("results_string").value = str_result;
       var new_sld = params_to_sld(result);
       //initial_sld.splice(0, initial_sld.length + 1);
       $.extend(true, initial_sld, new_sld.sld);
@@ -1204,8 +1203,6 @@ var app_init = function(opts) {
     function getUserTag () {
       return (words());
     }
-
-    var g_counter=1;
 
     function getCurrentDate () {
       var dt = new Date();
@@ -1248,20 +1245,40 @@ var app_init = function(opts) {
       return (obj);
     }
 
-    function multiProcsFit () {
-      var objInParams;
-      var rowData = {selected: false, date: "2/7/2019", time: "9:41", tag: "", comment: ""};
+var g_counter = 1;
 
-      rowData.tag = getUserRowTag ();
-      rowData.date = getCurrentDate();
-      rowData.time = getCurrentTime ();
-      var row = addResultRow (rowData);
-      objInParams = uploadUserParams ();
+    function multiProcsFit () {
+/*
+      $.ajax({
+//        type: "POST",
+        url: "./touch.html",
+        data: null
+      }).done(function( o ) {
+        $("#debug_string").val($("#debug_string").val() + "\n--------------------------\n" + o);
+      });
+*/
+//      $.ajax('python ./hi.py', {
+//        success: function(result) {
+//          $("#debug_string").val($("#debug_string").val() + g_counter++ + " times\n");
+//        }
+//    });
+/*
+*/
+var objInParams = uploadUserParams ();
+      var row = addFitParams ();
       var str_result = Module[opts.fitting.funcname].call(null, objInParams.xs, objInParams.ys, objInParams.ws, objInParams.cs, objInParams.ss, objInParams.lower_bound, objInParams.upper_bound);
       updateCompletionDate (row);
       saveResults (str_result);
-      document.getElementById("results_string").value = str_result;
-      objInParams.row = row;
+/*
+*/
+    }
+
+    function addFitParams () {
+      var rowData = {selected: false, date: "2/7/2019", time: "9:41", tag: "", comment: ""};
+      rowData.tag = getUserRowTag ();
+      rowData.date = getCurrentDate();
+      rowData.time = getCurrentTime ();
+      return (addResultRow (rowData));
     }
 
     function updateCompletionDate (row) {
@@ -1271,7 +1288,6 @@ var app_init = function(opts) {
     function saveResults (str_result)
     {
       var result = JSON.parse(str_result);
-      document.getElementById("results_string").value = str_result;
       var new_sld = params_to_sld(result);
     //initial_sld.splice(0, initial_sld.length + 1);
       $.extend(true, initial_sld, new_sld.sld);
