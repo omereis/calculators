@@ -708,7 +708,7 @@ var app_init = function(opts) {
       addTagInput (remprocControls);
       addDelRemoteResultsButton (remprocControls);
       addRemoteFitButton (remprocControls);
-      //add 
+//      add 
       update_mode();
     }
 
@@ -760,7 +760,7 @@ var app_init = function(opts) {
 
     function addRemoteResultsTable (target_id) {
       var remprocControls = d3.select("#" + target_id).append('div')
-      var table = remprocControls.append("table").attr("id", "results_table");
+      var table = remprocControls.append("table").attr("id", "results_table").attr("width", "100%");
       var thead = table.append("thead");
       table.append("tbody");
       var n, row = thead.append("tr").classed ("th_result", true);//style("background-color", "rgb(75, 75, 75)");
@@ -1166,6 +1166,10 @@ var app_init = function(opts) {
     }
 
     function fit() {
+      if (datafilename.length == 0) {
+        alert("Data file not loaded");
+        return;
+      }
       var extra_params = opts.fitting.extra_params.map(function(e,i) { 
         var input = d3.select("input#" + e.label);
         return (input.empty()) ? 0 : +(input.node().value);
@@ -1248,6 +1252,10 @@ var app_init = function(opts) {
 var g_counter = 1;
 
     function multiProcsFit () {
+      if (datafilename.length == 0) {
+        alert("Data file not loaded");
+        return;
+      }
 /*
       $.ajax({
 //        type: "POST",
