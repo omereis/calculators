@@ -80,6 +80,7 @@ var app_options = {
   }
 };
 
+
 var app_init = function(opts) {
     var layout = $('body').layout({
            west__size:          0
@@ -951,6 +952,8 @@ var app_init = function(opts) {
         update_plot_live();
     }
     
+    var g_webSocket    = null;
+
     function loadData() {
         var file = document.getElementById('datafile').files[0]; // only one file allowed
         datafilename = file.name;
@@ -960,6 +963,7 @@ var app_init = function(opts) {
             set_data(this.result);
         }
         reader.readAsText(file);
+        g_webSocket = webSocket = openWSConnection('ws', 'NCNR-R9nano.campus.nist.gov', '8765','');
     }
     
     var fileinput = document.getElementById('datafile');
@@ -1256,7 +1260,19 @@ var g_counter = 1;
         alert("Data file not loaded");
         return;
       }
-/*
+    var msg = "This is my message";
+    try {
+      //webSocket = openWSConnection('ws', 'NCNR-R9nano.campus.nist.gov', '8765','');
+      g_webSocket.send(msg);
+      //webSocket.close();
+      console.log('message sent');
+    }
+    catch (err) {
+      console.log(err.message);
+      alert (err.message);
+    }
+    return;
+    /*
       $.ajax({
 //        type: "POST",
         url: "./touch.html",
@@ -1272,14 +1288,53 @@ var g_counter = 1;
 //    });
 /*
 */
-var objInParams = uploadUserParams ();
+      var objInParams = uploadUserParams ();
       var row = addFitParams ();
-      var str_result = Module[opts.fitting.funcname].call(null, objInParams.xs, objInParams.ys, objInParams.ws, objInParams.cs, objInParams.ss, objInParams.lower_bound, objInParams.upper_bound);
+      var str_result = Module[opts.fitting.funcname].call(null, objInParams.xs, objInParams.ys, objInParams.ws, objInParams.cs,
+                      objInParams.ss, objInParams.lower_bound, objInParams.upper_bound);
       updateCompletionDate (row);
       saveResults (str_result);
-/*
-*/
+/**/
     }
+
+
+    function openWSConnection(protocol, hostname, port, endpoint) {
+      var webSocketURL = null;
+      var webSocket    = null;
+      webSocketURL = protocol + "://" + hostname + ":" + port + endpoint;
+      console.log("openWSConnection::Connecting to: " + webSocketURL);
+      try {
+        webSocket = new WebSocket(webSocketURL);
+        webSocket.onopen = function(openEvent) {
+          console.log("WebSocket OPEN: " + JSON.stringify(openEvent, null, 4));
+          document.getElementById("btnSend").disabled       = false;
+          document.getElementById("btnConnect").disabled    = true;
+          document.getElementById("btnDisconnect").disabled = false;
+        };
+        webSocket.onclose = function (closeEvent) {
+          console.log("WebSocket CLOSE: " + JSON.stringify(closeEvent, null, 4));
+          document.getElementById("btnSend").disabled       = true;
+          document.getElementById("btnConnect").disabled    = false;
+          document.getElementById("btnDisconnect").disabled = true;
+        };
+        webSocket.onerror = function (errorEvent) {
+          console.log("WebSocket ERROR: " + JSON.stringify(errorEvent, null, 4));
+        };
+        webSocket.onmessage = function (messageEvent) {
+          var wsMsg = messageEvent.data;
+          console.log("WebSocket MESSAGE: " + wsMsg);
+          if (wsMsg.indexOf("error") > 0) {
+              document.getElementById("incomingMsgOutput").value += "error: " + wsMsg.error + "\r\n";
+          } else {
+              document.getElementById("incomingMsgOutput").value += "message: " + wsMsg + "\r\n";
+          }
+      };
+    } catch (exception) {
+      console.error(exception);
+      webSocket = null;
+    }
+    return (webSocket);
+  }
 
     function addFitParams () {
       var rowData = {selected: false, date: "2/7/2019", time: "9:41", tag: "", comment: ""};

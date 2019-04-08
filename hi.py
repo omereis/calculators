@@ -1,0 +1,5 @@
+file = open ('debug.txt', 'a+')
+file.write ('Hello, world!')
+file.write ('Infinity'+ 5/0)
+file.close()
+#print ('Hello, world!')
