@@ -952,7 +952,8 @@ var app_init = function(opts) {
         update_plot_live();
     }
     
-    var webSocket    = null;
+    var webSocket = null;
+    var fileData  = null;
 
     function loadData() {
         var file = document.getElementById('datafile').files[0]; // only one file allowed
@@ -961,6 +962,7 @@ var app_init = function(opts) {
         var reader = new FileReader();
         reader.onload = function(e) {
             set_data(this.result);
+            fileData = this.result;
         }
         reader.readAsText(file);
         //webSocket = openWSConnection('ws', 'NCNR-R9nano.campus.nist.gov', '8765','');
@@ -1260,15 +1262,6 @@ var g_counter = 1;
         alert("Data file not loaded");
         return;
       }
-    var msg = "This is my message";
-    try {
-      webSocket = openWSConnection('ws', 'NCNR-R9nano.campus.nist.gov', '8765','', msg);
-    }
-    catch (err) {
-      console.log(err.message);
-      alert (err.message);
-    }
-    return;
     /*
       $.ajax({
 //        type: "POST",
@@ -1287,6 +1280,17 @@ var g_counter = 1;
 */
       var objInParams = uploadUserParams ();
       var row = addFitParams ();
+      //var msg = "This is my message";
+      try {
+        //webSocket = openWSConnection('ws', 'NCNR-R9nano.campus.nist.gov', '8765','', JSON.stringify(objInParams));
+        //openWSConnection('ws', 'NCNR-R9nano.campus.nist.gov', '5678','', fileData);
+        objInParams.fileData = fileData;
+        webSocket = openWSConnection('ws', 'NCNR-R9nano.campus.nist.gov', '5678','', JSON.stringify(objInParams));
+      }
+      catch (err) {
+        console.log(err.message);
+        alert (err.message);
+      }
       var str_result = Module[opts.fitting.funcname].call(null, objInParams.xs, objInParams.ys, objInParams.ws, objInParams.cs,
                       objInParams.ss, objInParams.lower_bound, objInParams.upper_bound);
       updateCompletionDate (row);

@@ -2,6 +2,7 @@ import asyncio
 import websockets
 import getopt, sys
 from time import sleep
+import datetime
 
 #------------------------------------------------------------------------------
 #host = 'localhost'
@@ -35,7 +36,9 @@ def save_message (message):
 #------------------------------------------------------------------------------
 async def hello(websocket, path):
     message = await websocket.recv()
-    save_message(message)
+    strTime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    save_message(strTime + ': '+ message)
+#    save_message(message)
     source = "{}:{}".format(websocket.host, websocket.port)
     print ("Just got a message from...")
     try:
