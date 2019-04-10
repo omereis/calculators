@@ -94,15 +94,43 @@
         
 </script>   
 <script src="../webalglib/lib/reflfit.js"></script> 
+<style>
+  table.fit_params {
+    border: 0px;
+    text-align: center;
+  }
+  td {
+    border: 3px;
+    padding-right: 5px;
+    padding-left: 5px;
+  }
+</style>
 </head>
 <body bgcolor="#ffffcc"> 
     <div id="top_panel" class="ui-layout-north">
+      <table class="fit_params" width="100%">
+        <tr>
+          <td>Load (*.refl) datafile: <input type="file" multiple="false" id="datafile" name="datafile" />
+            <a href="" id="pyscript_data_uri"></a></td>
+          <td>
+            <input type="button" value="Generate Refl1D script" id="scriptbutton">
+          </td>
+          <td>
+              <input type="button" value="Generate Refl1D script" id="scriptbutton">
+          </td>
+          <td><input type="text" value="refl1d_script.py" width=20 id="scriptname"></td>
+          <td style="text-align: center;">Port: <input type="text" size="3" id="remote_port" value="5687"></td>
+          <td style="text-align: center;">Server: <input type="text" id="remote_server" value="NCNR-R9nano.campus.nist.gov"></td>
+        </tr>
+      </table>
+<!--
         Load (*.refl) datafile: <input type="file" multiple="false" id="datafile" name="datafile" />
         <a href="" id="pyscript_data_uri"></a>
         <input type="button" value="Generate Refl1D script" id="scriptbutton">
         <input type="text" value="refl1d_script.py" width=20 id="scriptname">
         <input type="checkbox" id="cboxDebug" value="Debug">Debug
         <button id="show_doc" style="float:right;">help</button>
+-->
     </div>
     <div id="centerpane" class="ui-layout-center">
         <div id='rplot'></div>
