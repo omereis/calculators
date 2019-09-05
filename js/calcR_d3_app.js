@@ -4,11 +4,20 @@
 //import XYChart from '../../d3-science/lib/xy-chart';
 //import default as profileInteractor from '../../d3-science/profile-interactor';
 "use strict";
-
-
+/*
+var JSZip = document.createElement('script');
+try {
+  JSZip.src = 'zip/JSZip.js';
+}
+catch (err) {
+  alert (err.message);
+}
+*/
 //var THETA_M = Math.PI * 3.0 / 2.0; // 270 degrees by default
 var THETA_M = 1.0/2.0; // 90 degrees by default.
 var AGUIDE = 270;
+
+var data_file_content = null;  // debug note
 
 var app_options = {
   initial_sld: [
@@ -80,7 +89,6 @@ var app_options = {
   }
 };
 
-
 var app_init = function(opts) {
     var layout = $('body').layout({
            west__size:          0
@@ -113,7 +121,10 @@ var app_init = function(opts) {
       var message = event.data;
       api.call(event.data);
     }
-    window.addEventListener("message", function (event) { api.call(event.data) }, false);
+    window.addEventListener("message", function (event) {
+      //alert ('event listner, type of event.data: ' + typeof (event.data) + "\nLength of event.data: " + (event.data.length) + "\nevent.data: " + event.data);
+      api.call(event.data)
+    }, false);
 
     var webworker = new Worker(opts.worker_script);
     var webworker_queue = [],
@@ -704,97 +715,10 @@ var app_init = function(opts) {
     makeFileControls('file_controls');
     $("#file_controls").controlgroup();
     
-    function makeRemoteProcessingControls (target_id) {
-      var remprocControls = d3.select("#" + target_id).append('div')
-      addTagInput (remprocControls);
-      addDelRemoteResultsButton (remprocControls);
-      addRemoteFitButton (remprocControls);
-//      add 
-      update_mode();
-    }
-
-    var lstrResTblHead = ["Select", "Start Time", "Tag", "End Time"];
-    var g_results_table, g_row_counter;
-
-    function addTagInput (control) {
-      control
-        .append("label")
-        .text("Tag ")
-        .append("input")
-          .attr("id", "idMultiProcsTag")
-          .attr("type", "text")
-          .attr("name", "tag")
-          //.attr("value", "my tag")
-          .attr("value", "")//words())
-          //.attr("width", "50px")
-          .style("width", "6em")
-          ;
-    }
-
-    function addRemoteFitButton (control) {
-      control
-        .append("button")
-        .text("MP Fit")
-          .attr("id", "idMultiProcsFit")
-          .classed("ui-button ui-corner-all ui-widget", true)
-          .style("height", "26px")
-          .style("padding-top", "0px")
-          .style("padding-left", "1px")
-          .style("padding-right", "1px")
-          .style("width", "4em")
-          .on("click", multiProcsFit);
-    }
-
-    function addDelRemoteResultsButton (control) {
-      control
-        .append("button")
-        .text("Delete")
-          .attr("id", "idDelMultiProcsFitResults")
-          .style("padding-left", "1px")
-          .style("padding-right", "1px")
-          .style("width", "6em")
-          .style("height", "30px")
-          .style("padding-top", "1px")
-          .classed("ui-button ui-corner-all ui-widget", true)
-          .on("click", multiProcsDelRows);
-    }
-
-    function addRemoteResultsTable (target_id) {
-      var remprocControls = d3.select("#" + target_id).append('div')
-      var table = remprocControls.append("table").attr("id", "results_table").attr("width", "100%");
-      var thead = table.append("thead");
-      table.append("tbody");
-      var n, row = thead.append("tr").classed ("th_result", true);//style("background-color", "rgb(75, 75, 75)");
-      g_row_counter = 0;
-
-      for (n=0 ; n < lstrResTblHead.length ; n++) {
-        row.append("th").html(lstrResTblHead[n]);
-      }
-      g_results_table = table;
-    }
-
-    function addResultRow (rowData) {
-      var tbody = g_results_table.select("tbody");//.attr("width", "100%");
-      var row = tbody.append("tr").attr ("id", "tr_result");//, true);
-      
-      row.append("td")
-        .append("input")
-        .attr("type", "checkbox")
-        .attr("id", "results_checkbox")
-        .on("click", function() {
-          console.log("Checked: " + this.checked);
-          console.log(words());
-        });
-        row.append("td").html(rowData.date + ", " + rowData.time).classed("td_result", true);
-//        row.append("td").html(rowData.time).classed("td_result", true);
-        row.append("td").html(rowData.tag).classed("td_result", true);
-        row.append("td").html(rowData.comment).attr("id","result_comment").classed("td_result", true);
-        return (row);
-    }
-
     function makeModeControls(target_id) {
       var modeControls = d3.select("#" + target_id).append('div')
           .classed("mode controls", true)
+      
       
       modeControls
         .append("label")
@@ -818,22 +742,21 @@ var app_init = function(opts) {
       var fitControls = d3.select("#" + target_id).append('div')
         .classed("fit controls", true)
         .style("padding-top", "5px")
-
-        fitControls.append("label")
+        
+      fitControls.append("button")
+        .text("start fit")
+        .classed("ui-button ui-corner-all ui-widget", true)
+        .on("click", fit)
+        
+      fitControls.append("label")
         .text(" log:")
       
       fitControls.append("div")
         .append("pre")
         .classed("fit log", true)
+
+      update_mode.call({value: "edit"});
       
-      modeControls.append("button")
-        .text("Start Fit")
-        .attr("id", "idStartFitBtn")
-        .classed("ui-button ui-corner-all ui-widget", true)
-        .on("click", fit)
-
-        update_mode.call({value: "edit"});
-
       $(modeControls.node()).controlgroup();
     }
     
@@ -844,13 +767,8 @@ var app_init = function(opts) {
         return;
       } 
       var mode = modechoice.attr("value");
-      var fVisible = (mode == "edit") ? "hidden" : "visible";
-
-      d3.select("div.fit.controls").style("visibility", fVisible);
-      setButtonVisible ("idStartFitBtn", fVisible);
-      setButtonVisible ("idMultiProcsFit", fVisible);
+      d3.select("div.fit.controls").style("visibility", (mode == "edit") ? "hidden" : "visible");
       var data_table = d3.select("div#sld_table");
-
       data_table.selectAll("td.data-cell")
         .classed("edit-mode", (mode == "edit"))
         .classed("fit-mode",  (mode == "fit"));
@@ -868,24 +786,13 @@ var app_init = function(opts) {
       }
     }
     
-    function setButtonVisible(btnID, fVisible) {
-      var btn, btnD3;
-
-      btn = document.getElementById(btnID);//"idStartFitBtn");
-      try {
-        btn.style.visibility = fVisible;
-      }
-      catch (err) {
-        console.log(err.message);
-      }
-    }
-
     makeModeControls('fit_controls');
     //update_plot_live();
-    makeRemoteProcessingControls ("remote_processing");
-    addRemoteResultsTable ('mp_results');
+    
     //update_plot(0, initial_sld, 'xy');
+    
     function set_data(raw_data) {
+      data_file_content = raw_data;
       var series_lookup = opts.series_lookup;
         var x, y, y_out, row;
         var kz_list = [], 
@@ -951,25 +858,35 @@ var app_init = function(opts) {
         refl_plot.source_data(sd);
         update_plot_live();
     }
-    
-    var webSocket = null;
-    var fileData  = null;
 
     function loadData() {
-        var file = document.getElementById('datafile').files[0]; // only one file allowed
+      var file = document.getElementById('datafile').files[0]; // only one file allowed
+      try {
         datafilename = file.name;
-        var result = null;
+        setScriptFileName (datafilename);
         var reader = new FileReader();
         reader.onload = function(e) {
             set_data(this.result);
-            fileData = this.result;
         }
         reader.readAsText(file);
-        //webSocket = openWSConnection('ws', 'NCNR-R9nano.campus.nist.gov', '8765','');
-    }
-    
-    var fileinput = document.getElementById('datafile');
-    fileinput.onchange = loadData;    
+      }
+      catch (err) {
+        console.log(err);
+      }    }
+
+      function setScriptFileName (datafilename) {
+        var scriptName = '';
+        var pt = datafilename.indexOf('.');
+        if (pt > 0) {
+          scriptName = datafilename.substring(0, pt) + '.zip';
+        }
+        var inText = document.getElementById('scriptname');
+        inText.value = scriptName;
+        //var tmpText = document.getElementById('input_file_name');
+        //tmpText.textContent = scriptName;
+      }    var fileinput = document.getElementById('datafile');
+
+      fileinput.onchange = loadData;    
     
     var test_show_script = function() {
         var sldarray = get_sld(plot2.plugins.interactors.profile1);
@@ -1023,16 +940,234 @@ var app_init = function(opts) {
         try {
           var pyscript = generate_slab_script.apply(null, script_params);
           var filename = document.getElementById("scriptname").value;
-          saveData(pyscript, filename);
-        } catch(e) {
-          alert('error! ' + e.message)
+          var lstr_py = pyscript.trim().split('\n');
+          var strToFit = get_string_to_fit (get_to_fit());
+          var strScript = modifySelection(lstr_py, strToFit);
+          var write_file = false;
+          //if (write_file)
+            //saveData(strScript, filename);
+          save_data_files (strScript, filename, datafilename);
+        }
+        catch (err) {
+          alert(err.message);
         }
     }
+
+    function set_param_min_max (v0, min_val, max_val, param_values) {
+      param_values['value'] = v0;
+      param_values['min'] = min_val;
+      param_values['max'] = max_val;
+    }
+
+    function get_param_min(param_name, v0, param_values) {
+      if (param_name == "thickness") {
+        set_param_min_max (v0, v0 - 1, v0 + 1, param_values);
+      }
+      else if (param_name == "sld") {
+        set_param_min_max (v0, v0 - 2, v0 + 2, param_values);
+      }
+      else if (param_name == "mu") {
+        set_param_min_max (v0, v0 - 1, v0 + 1, param_values);
+      }
+      else if (param_name == "roughness") {
+        set_param_min_max (v0, v0 - 2, v0 + 2, param_values);
+      }
+    }
+
+    function set_fit_dest(param_name, to_fit_layer, param_values) {
+      var n, keys = Object.keys(param_values), f_stop;
+
+      f_stop = false;
+      if (to_fit_layer.hasOwnProperty('length')) {
+        for (n=0 ; (n < to_fit_layer.length) && (!f_stop) ; n++) {
+          if (param_name == to_fit_layer[n])
+            f_stop = true;
+        }
+      }
+      param_values['fit_dest'] = String(f_stop);
+    }
+
+/*
+output file format
+array of layers.
+each layer a dictionary with the following keys:
+  value:    real/Inf/-Inf
+  min:      real/Inf/-Inf
+  max:      real/Inf/-Inf
+  fit_dest: true/false
+*/
+function get_JSON() {
+      var json_table, table_data = get_table_data();
+      var json_table, layer_key, json_layer, layer_keys, layer_values, table_layer;
+      var to_fit = get_to_fit();
+
+      try {
+        json_table = {};
+        for (var n_table in table_data) {
+          table_layer = table_data[n_table];
+          layer_key = "layer" + n_table;
+          json_layer={};
+          layer_keys = Object.keys(table_layer);
+          layer_values = Object.values(table_layer);
+          for (var n=0 ; n < layer_keys.length ; n++) {
+            var param_name = layer_keys[n], param_values;
+            param_values = {};
+            get_param_min(param_name, Number(layer_values[n]), param_values);
+            set_fit_dest(param_name, to_fit[n_table], param_values);
+            json_layer[param_name] = param_values;
+          }
+          json_table[layer_key] = json_layer;
+        }
+      }
+      catch (err) {
+        alert(err.message);
+      }
+      return (json_table);
+  }
+
+  function add_json_file (zip, script_filename) {
+    var json_file_name, json_data;
+
+    json_data = get_JSON();
+    json_file_name = script_filename.replace('py','json');
+    zip.file (json_file_name, JSON.stringify(json_data));
+  }
+
+  function save_data_files (strScript, script_filename, data_file_name) {
+    var data_file_name, zip_file_name, json_file_name, json_data;
+    var base_name = data_file_name.split('.').slice(0, -1).join('.');
+    script_filename = get_script_file_name (base_name);
+    zip_file_name   = get_zip_file_name (base_name);
+    try {
+      var zip = new JSZip();
+      zip.file(script_filename, strScript);
+      if (data_file_content) {
+        zip.file(data_file_name, data_file_content);
+      }
+      add_json_file (zip, script_filename);
+      zip.generateAsync({type:"blob"})
+        .then(function(content) {
+          saveAs(content, zip_file_name);
+        });
+      }
+      catch (err) {
+        alert (err.message);
+      }
+    }
+
+    function get_script_file_name (script_filename) {
+      if ((script_filename == null) || (script_filename.trim().length == 0)) {
+        script_filename = "script";
+      }
+      var ext = script_filename.substring (script_filename.length - 3).toLowerCase();
+      if (ext != ".py") {
+        script_filename += ".py";
+      }
+      return (script_filename);
+    }
+
+    function get_zip_file_name (script_filename) {
+      var zip_file_name;
+
+      if ((script_filename == null) || (script_filename.length == 0)) {
+        script_filename = "script";
+      }
+      zip_file_name = script_filename.replace (/py/,'zip');
+      var ext = zip_file_name.substring(zip_file_name.length - 4);
+      if (ext != ".zip") {
+        zip_file_name += ".zip";
+      }
+      return (zip_file_name);
+    }
+
+    function get_data_file_name () {
+      var data_file_name;
+
+      try {
+        data_file_name = document.getElementById('datafile').files[0].name;
+      }
+      catch (err) {
+        if ((data_file_content != null) &&(data_file_content.length > 0))
+          data_file_name = "data.dat";
+        else
+          data_file_name = null;
+      }
+      return (data_file_name);
+    }
+
+    function get_string_to_fit (to_fit) {
+      var strToFit = "";
+      for (var n=0 ; n < to_fit.length ; n++) {
+        strToFit += JSON.stringify(to_fit[n]);
+        if (n < to_fit.length - 1) {
+          strToFit += "\n";
+        }
+      }
+      return (strToFit);
+    }
+
+    function modifySelection(lstr_py, strToFit) {
+      var dictFitToScript = {"thickness":"thickness", "roughness":"interface", "sld":"rho", "mu":"irho"};
+      var lstrToFit = [];
+      var fit_params = get_fit_params(strToFit);
+      lstrToFit = get_fit_string (fit_params, dictFitToScript);
+      lstr_py = comment_out_selected_params (lstr_py, lstrToFit);
+      return (lstr_py.join('\n'));
+    }
+
+    function comment_out_selected_params (lstr_py, lstrToFit) {
+      for (var n=0 ; n < lstr_py.length ; n++) {
+        var strLine = lstr_py[n];
+        var found = false;
+        for (var i=0 ; (i < lstrToFit.length) && (!found) ; i++) {
+          if (strLine.includes(lstrToFit[i])) {
+            found = true;
+          }
+        }
+        if (found) {
+          lstr_py[n] = "# " + strLine;
+        }
+      }
+      return (lstr_py);
+    }
+
+    function get_fit_string (fit_params, dictFitToScript) {
+      var lstrToFit = [];
+      for (var n=0 ; n < fit_params.length ; n++) {
+        for (var i=0 ; i < fit_params[i].length ; i++) {
+          var strParam = n.toString() + "." + dictFitToScript[fit_params[n][i]] + ".range";
+          lstrToFit.push(strParam);
+        }
+      }
+      return (lstrToFit);
+    }
+
+    function get_fit_params(strToFit) {
+      var lstr = strToFit.trim().split('\n');
+      var strTmp, strLayer, fit_params=[];
+
+      for (var n=0 ; n < lstr.length ; n++) {
+        strTmp = lstr[n].split(',');
+        strLayer = [];
+        for (var i=0 ; i < strTmp.length ; i++) {
+          strLayer.push(strTmp[i].split(':')[0].replace(/\"/g,'').replace(/{/g,'').replace(/}/g,'').trim());
+        }
+        fit_params.push(strLayer);
+      }
+      return (fit_params);
+    }
+
     document.getElementById("scriptbutton").onclick = show_script;
-    
+
+    function get_table_data () {
+      var table_data = d3.selectAll("#sld_table table tr").data().slice(1);
+      return (table_data);
+    }
+
     function export_table() {
       // skip the header...
-      var table_data = d3.selectAll("#sld_table table tr").data().slice(1);
+      //var table_data = d3.selectAll("#sld_table table tr").data().slice(1);
+      var table_data = get_table_data();
       saveData(d3.tsvFormat(table_data), "sld_table.txt");
     }
     
@@ -1156,26 +1291,8 @@ var app_init = function(opts) {
       output += "iterations = \t" + params.iterations.toFixed() + "\n";
       return output;
     }
-            
-    function getCheckboxState (cboxID) {
-      var cbox = d3.select("#" + cboxID);
-      var cboxState;
-
-      try {
-        cboxState = cbox._groups[0][0].checked ? 1 : 0;
-      }
-      catch (err) {
-        console.log(err.message);
-        cboxState = -1;
-      }
-      return (cboxState);
-    }
 
     function fit() {
-      if (datafilename.length == 0) {
-        alert("Data file not loaded");
-        return;
-      }
       var extra_params = opts.fitting.extra_params.map(function(e,i) { 
         var input = d3.select("input#" + e.label);
         return (input.empty()) ? 0 : +(input.node().value);
@@ -1189,14 +1306,14 @@ var app_init = function(opts) {
       var ws = JSON.stringify(opts.data.dR_list.map(function(dy) {return 1.0/dy}));
       var cs = JSON.stringify(params.c);
       var ss = JSON.stringify(params.s);
-
+      
       var lower_bound = JSON.stringify(params.bndl).replace(/null/g, "-Inf");
       var upper_bound = JSON.stringify(params.bndu).replace(/null/g, "+Inf");
       console.log({xs: xs, ys: ys, ws: ws, cs: cs, ss: ss, upp: upper_bound, low: lower_bound});
       var fit_func = opts.fit_func
       var str_result = Module[opts.fitting.funcname].call(null, xs, ys, ws, cs, ss, lower_bound, upper_bound);
       var result = JSON.parse(str_result);
-
+      
       var new_sld = params_to_sld(result);
       //initial_sld.splice(0, initial_sld.length + 1);
       $.extend(true, initial_sld, new_sld.sld);
@@ -1206,173 +1323,14 @@ var app_init = function(opts) {
       profile_interactor.update();
       sld_plot.resetzoom();
       update_plot_live();
-
+      
       d3.select("pre.fit.log").text(fit_report(result, to_fit));    
     }
-
-    function getUserTag () {
-      return (words());
-    }
-
-    function getCurrentDate () {
-      var dt = new Date();
-      return (dt.getMonth() + 1 + "/" + dt.getDate() + "/" + (dt.getYear() + 1900));
-    }
-
-    function getCurrentTime () {
-      var dt = new Date();
-      return (dt.getHours() + ":" + (dt.getMinutes() < 10 ? "0" + dt.getMinutes() : dt.getMinutes()) + ":" + dt.getSeconds());
-    }
-
-    function getUserRowTag () {
-      var tag, edtTag = document.getElementById("idMultiProcsTag");
-      if (edtTag.value.length == 0) {
-        tag = getUserTag ();
-        document.getElementById("idMultiProcsTag").value = tag;
-      }
-      else
-        tag = edtTag.value;
-      return (tag = tag + "_" + g_counter++);
-    }
-
-    function uploadUserParams (xs, ys, ws, cs, ss, lower_bound, upper_bound) {
-      var obj = new Object();
-      var extra_params = opts.fitting.extra_params.map(function(e,i) { 
-        var input = d3.select("input#" + e.label);
-        return (input.empty()) ? 0 : +(input.node().value);
-      });
-      var to_fit = get_to_fit().reverse();
-      var params = sld_to_params(extra_params, to_fit);
-      obj.xs = JSON.stringify(opts.data.kz_list); // qz to kz
-      obj.ys = JSON.stringify(opts.data.R_list);
-      obj.ws = JSON.stringify(opts.data.dR_list.map(function(dy) {return 1.0/dy}));
-      obj.cs = JSON.stringify(params.c);
-      obj.ss = JSON.stringify(params.s);
-
-      obj.lower_bound = JSON.stringify(params.bndl).replace(/null/g, "-Inf");
-      obj.upper_bound = JSON.stringify(params.bndu).replace(/null/g, "+Inf");
-      console.log({xs: obj.xs, ys: obj.ys, ws: obj.ws, cs: obj.cs, ss: obj.ss, upper_bound: obj.upper_bound, lower_bound: obj.lower_bound});
-      return (obj);
-    }
-
-var g_counter = 1;
-
-    function multiProcsFit () {
-      if (datafilename.length == 0) {
-        alert("Data file not loaded");
-        return;
-      }
-    /*
-      $.ajax({
-//        type: "POST",
-        url: "./touch.html",
-        data: null
-      }).done(function( o ) {
-        $("#debug_string").val($("#debug_string").val() + "\n--------------------------\n" + o);
-      });
-*/
-//      $.ajax('python ./hi.py', {
-//        success: function(result) {
-//          $("#debug_string").val($("#debug_string").val() + g_counter++ + " times\n");
-//        }
-//    });
-/*
-*/
-      var objInParams = uploadUserParams ();
-      var row = addFitParams ();
-      //var msg = "This is my message";
-      try {
-        //webSocket = openWSConnection('ws', 'NCNR-R9nano.campus.nist.gov', '8765','', JSON.stringify(objInParams));
-        //openWSConnection('ws', 'NCNR-R9nano.campus.nist.gov', '5678','', fileData);
-        objInParams.fileData = fileData;
-        webSocket = openWSConnection('ws', 'NCNR-R9nano.campus.nist.gov', '5678','', JSON.stringify(objInParams));
-      }
-      catch (err) {
-        console.log(err.message);
-        alert (err.message);
-      }
-      var str_result = Module[opts.fitting.funcname].call(null, objInParams.xs, objInParams.ys, objInParams.ws, objInParams.cs,
-                      objInParams.ss, objInParams.lower_bound, objInParams.upper_bound);
-      updateCompletionDate (row);
-      saveResults (str_result);
-/**/
-    }
-
-
-    function openWSConnection(protocol, hostname, port, endpoint, message) {
-      var webSocketURL = null;
-      webSocketURL = protocol + "://" + hostname + ":" + port + endpoint;
-      console.log("openWSConnection::Connecting to: " + webSocketURL);
-      try {
-        webSocket = new WebSocket(webSocketURL);
-        webSocket.onopen = function(openEvent) {
-          console.log("WebSocket OPEN");
-          webSocket.send(message);
-          webSocket.close();
-        };
-        webSocket.onclose = function (closeEvent) {
-          console.log("WebSocket CLOSE");
-        };
-        webSocket.onerror = function (errorEvent) {
-          console.log("WebSocket ERROR: " + JSON.stringify(errorEvent, null, 4));
-        };
-        webSocket.onmessage = function (messageEvent) {
-          var wsMsg = messageEvent.data;
-          console.log("WebSocket MESSAGE: " + wsMsg);
-      };
-    } catch (exception) {
-      console.error(exception);
-      webSocket = null;
-    }
-    return (webSocket);
-  }
-
-    function addFitParams () {
-      var rowData = {selected: false, date: "2/7/2019", time: "9:41", tag: "", comment: ""};
-      rowData.tag = getUserRowTag ();
-      rowData.date = getCurrentDate();
-      rowData.time = getCurrentTime ();
-      return (addResultRow (rowData));
-    }
-
-    function updateCompletionDate (row) {
-      row._groups[0][0].cells[3].innerText = getCurrentDate() + ", " + getCurrentTime ();
-    }
-
-    function saveResults (str_result)
-    {
-      var result = JSON.parse(str_result);
-      var new_sld = params_to_sld(result);
-    //initial_sld.splice(0, initial_sld.length + 1);
-      $.extend(true, initial_sld, new_sld.sld);
-    //d3.selectAll("div#sld_table table tbody tr").data(initial_sld);
-      table_update(initial_sld);
-      update_profile_limits(initial_sld);
-      profile_interactor.update();
-      sld_plot.resetzoom();
-      update_plot_live();
-
-      d3.select("pre.fit.log").text(fit_report(result, to_fit));    
-    }
-
-    function multiProcsDelRows () {
-      var rows = d3.select("#" + "results_table").select('tbody').selectAll("tr");
-      var cboxes = rows.selectAll("td").select('#results_checkbox');
-      for (var n=0 ; n < cboxes._groups.length ; n++) {
-        try {
-          if (cboxes._groups[n][0].checked) {
-            rows._groups[0][n].remove();
-          }
-        }
-        catch (err) {
-          console.log(err.message);
-        }
-      }
-    }
+    
     var current_item = d3.selectAll('input.plot-choice[value="' + current_choice + '"]');
     current_item.property("checked", true);
     //current_item.on("change").call(current_item.node());
-
+    
     $.get("doc/calcR.html", function(data) { $("div#documentation_popup").html(data); });
     $("button#show_doc").on("click", function() { $("div#documentation_popup").dialog({
         modal: true,
