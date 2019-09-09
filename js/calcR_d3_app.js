@@ -1067,12 +1067,24 @@ function get_JSON() {
     }
 
     function get_zip_file_name (script_filename) {
-      var zip_file_name;
-
-      if ((script_filename == null) || (script_filename.length == 0)) {
-        script_filename = "script";
+      var zip_file_name, script_in = document.getElementById('scriptname');
+      if (script_in) {
+        zip_file_name = script_in.value.toLowerCase();
       }
-      zip_file_name = script_filename.replace (/py/,'zip');
+      if (zip_file_name.length == 0) {
+        if ((script_filename) && (script_filename.length > 0)) {
+          zip_file_name = script_filename.toLowerCase();
+        }
+        if (zip_file_name.length == 0) {
+          zip_file_name = "script";
+        }
+        else {
+
+        }
+      }
+      if (zip_file_name.indexOf('.py') > 0) {
+        zip_file_name = zip_file_name.replace (/py/,'zip');
+      }
       var ext = zip_file_name.substring(zip_file_name.length - 4);
       if (ext != ".zip") {
         zip_file_name += ".zip";
@@ -1318,13 +1330,17 @@ function get_JSON() {
       //initial_sld.splice(0, initial_sld.length + 1);
       $.extend(true, initial_sld, new_sld.sld);
       //d3.selectAll("div#sld_table table tbody tr").data(initial_sld);
+      show_results (initial_sld);
+
+      d3.select("pre.fit.log").text(fit_report(result, to_fit));    
+    }
+
+    function show_results (initial_sld) {
       table_update(initial_sld);
       update_profile_limits(initial_sld);
       profile_interactor.update();
       sld_plot.resetzoom();
       update_plot_live();
-      
-      d3.select("pre.fit.log").text(fit_report(result, to_fit));    
     }
     
     var current_item = d3.selectAll('input.plot-choice[value="' + current_choice + '"]');
