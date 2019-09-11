@@ -768,6 +768,7 @@ var app_init = function(opts) {
       } 
       var mode = modechoice.attr("value");
       d3.select("div.fit.controls").style("visibility", (mode == "edit") ? "hidden" : "visible");
+      document.getElementById('btnRemoteFit').disabled = (mode == 'edit');
       var data_table = d3.select("div#sld_table");
       data_table.selectAll("td.data-cell")
         .classed("edit-mode", (mode == "edit"))
@@ -920,6 +921,14 @@ var app_init = function(opts) {
     }());
     
     function show_script() {
+      export_script('zip');
+    }
+
+    function send_script () {
+      export_script('websocket');
+    }
+
+    function export_script(export_dest) {
         var sldarray = initial_sld.map(function(d) {var dd = $.extend(true, {}, d); dd.sld *= 1e-6; dd.mu *= 1e-6; dd.sldm *= 1e-6; return dd});
         var qmin = parseFloat($("input#qmin").val()),
             qmax = parseFloat($("input#qmax").val()),
@@ -946,7 +955,12 @@ var app_init = function(opts) {
           var write_file = false;
           //if (write_file)
             //saveData(strScript, filename);
-          save_data_files (strScript, filename, datafilename);
+          if (export_dest == 'zip') {
+            save_data_files (strScript, filename, datafilename);
+          }
+          else if (export_dest == 'websocket') {
+            send_data_files (strScript, filename, datafilename);
+          }
         }
         catch (err) {
           alert(err.message);
@@ -1025,6 +1039,15 @@ function get_JSON() {
       return (json_table);
   }
 
+  function get_json_data_name (script_filename) {
+    var arr_json_data_name = [];
+    var json_file_name, json_data;
+
+    arr_json_data_name[0] = get_JSON();
+    arr_json_data_name[1] = script_filename.replace('py','json');
+    return (arr_json_data_name);
+  }
+
   function add_json_file (zip, script_filename) {
     var json_file_name, json_data;
 
@@ -1055,6 +1078,29 @@ function get_JSON() {
       }
     }
 
+    function send_data_files (strScript, script_filename, data_file_name) {
+      var data_file_name, zip_file_name, json_file_name, json_data;
+      var base_name = data_file_name.split('.').slice(0, -1).join('.');
+      script_filename = get_script_file_name (base_name);
+      zip_file_name   = get_zip_file_name (base_name);
+      var arr_json_data_name = get_json_data_name (script_filename);
+      try {
+        var zip = new JSZip();
+        zip.file(script_filename, strScript);
+        if (data_file_content) {
+          zip.file(data_file_name, data_file_content);
+        }
+        add_json_file (zip, script_filename);
+        zip.generateAsync({type:"blob"})
+          .then(function(content) {
+            saveAs(content, zip_file_name);
+          });
+        }
+        catch (err) {
+          alert (err.message);
+        }
+      }
+  
     function get_script_file_name (script_filename) {
       if ((script_filename == null) || (script_filename.trim().length == 0)) {
         script_filename = "script";
@@ -1170,6 +1216,7 @@ function get_JSON() {
     }
 
     document.getElementById("scriptbutton").onclick = show_script;
+    document.getElementById("btnRemoteFit").onclick = send_script;
 
     function get_table_data () {
       var table_data = d3.selectAll("#sld_table table tr").data().slice(1);
