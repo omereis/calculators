@@ -1,6 +1,11 @@
 /*
+ * Local Tags
+ */
+ 
+/*
 Source: https://github.com/allenhwkim/random-english-words
 */
+//-----------------------------------------------------------------------------
 var wordList = [
     // Borrowed from xkcd password generator which borrowed it from wherever
     "ability","able","aboard","about","above","accept","accident","according",
@@ -249,8 +254,8 @@ var wordList = [
     "your","yourself","youth","zero","zebra","zipper","zoo","zulu"
   ];
   
-  function words(options) {
-  
+  function random_words(options) {
+
     function word() {
       if (options && options.maxLength > 1) {
         return generateWordWithMaxLength();
@@ -258,7 +263,7 @@ var wordList = [
         return generateRandomWord();
       }
     }
-  
+
     function generateWordWithMaxLength() {
       let rightSize = false;
       let wordUsed;
@@ -271,51 +276,51 @@ var wordList = [
       }
       return wordUsed;
     }
-  
+
     function generateRandomWord() {
       return wordList[randInt(wordList.length)];
     }
-  
+
     function randInt(lessThan) {
       return Math.floor(Math.random() * lessThan);
     }
-  
+
     // No arguments = generate one word
     if (typeof(options) === 'undefined') {
       return word();
     }
-  
+
     // Just a number = return that many words
     if (typeof(options) === 'number') {
       options = { exactly: options };
     }
-  
+
     // options supported: exactly, min, max, join
     if (options.exactly) {
       options.min = options.exactly;
       options.max = options.exactly;
     }
-    
+
     // not a number = one word par string
     if (typeof(options.wordsPerString) !== 'number') {
       options.wordsPerString = 1;
     }
-  
+
     //not a function = returns the raw word
     if (typeof(options.formatter) !== 'function') {
       options.formatter = (word) => word;
     }
-  
+
     //not a string = separator is a space
     if (typeof(options.separator) !== 'string') {
       options.separator = ' ';
     }
-  
+
     var total = options.min + randInt(options.max + 1 - options.min);
     var results = [];
     var token = '';
     var relativeIndex = 0;
-  
+
     for (var i = 0; (i < total * options.wordsPerString); i++) {
       if (relativeIndex === options.wordsPerString - 1) {
         token += options.formatter(word(), relativeIndex);
@@ -337,7 +342,62 @@ var wordList = [
   
     return results;
   }
-  
-  //module.exports = words;
-  // Export the word list as it is often useful
-  //words.wordList = wordList;
+//-----------------------------------------------------------------------------
+function generateTag() {
+    var latest_tag = get_latest_tag();
+    if (latest_tag == null)
+        latest_tag = random_words();
+    return (latest_tag);
+}
+//var local_tag = 'reflectivity_tag';
+var local_tag = 'bumps_tag';
+//-----------------------------------------------------------------------------
+function get_latest_tag() {
+    current_tags = localStorage.getItem(local_tag);
+    if (current_tags != null) {
+        all_tags = current_tags.split(';');
+        latest_tag = all_tags[0];
+    }
+    else {
+        latest_tag = null;
+    }
+    return (latest_tag);
+}
+//-----------------------------------------------------------------------------
+function save_tag_to_local(tag) {
+    current_tags = localStorage.getItem(local_tag);
+    if (current_tags == null)
+        current_tags = tag;
+    else {
+        all_tags = current_tags.split(';');
+        iTag = all_tags.indexOf(tag);
+        if (iTag >= 0) {
+            if (iTag > 0) {
+                all_tags.splice(iTag,1);
+            }
+        }
+        all_tags.splice(0,1,tag);
+        current_tags = all_tags.join(';');
+    }
+    localStorage.setItem('bumps_tags',current_tags);
+    return (tag);
+}
+//-----------------------------------------------------------------------------
+function save_tag_to_local(tag) {
+    current_tags = localStorage.getItem('bumps_tags');
+    if (current_tags == null)
+        current_tags = tag;
+    else {
+        all_tags = current_tags.split(';');
+        iTag = all_tags.indexOf(tag);
+        if (iTag >= 0) {
+            if (iTag > 0) {
+                all_tags.splice(iTag,1);
+            }
+        }
+        all_tags.splice(0,1,tag);
+        current_tags = all_tags.join(';');
+    }
+    localStorage.setItem('bumps_tags',current_tags);
+    return (tag);
+}

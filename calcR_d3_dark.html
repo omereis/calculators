@@ -27,6 +27,9 @@
     <script src="https://cdn.jsdelivr.net/npm/jszip@3.1.5/dist/jszip.js" charset="utf-8"></script>
     <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.0-rc.4/src/FileSaver.js" charset="utf-8"></script>
 
+    <!--<script src="/calculators/js/random_words.js" charset="utf-8"></script>-->
+    <script src="/calculators/js/local_tags.js" charset="utf-8"></script>
+    <!--<script src="/calculators/js/remote_fit.js" charset="utf-8"></script>-->
     <script src="/calculators/js/calcR_d3_app.js" charset="utf-8"></script>
    
 <script type="text/javascript">
@@ -81,8 +84,9 @@
         xs_order: {'unpolarized': 0}
       }
     };
-    window.onload = function() {        
-        $("#AGUIDE_label").css("display", "none");
+    window.onload = function() {
+      document.getElementById('remote_tag').value = generateTag();
+      $("#AGUIDE_label").css("display", "none");
     }
     var Module = Module || {};
     Module['memoryInitializerPrefixURL'] = '../webalglib/lib/';
@@ -91,14 +95,22 @@
 
         
 </script>   
-<script src="../webalglib/lib/reflfit.js"></script> 
+<script src="../webalglib/lib/reflfit.js"></script>
+<script>
+  function btnClick(id) {
+    alert(id + ' clicked');
+  }
+</script>
 </head>
 <body bgcolor="#ffffcc"> 
     <div id="top_panel" class="ui-layout-north">
         Load (*.refl) datafile: <input type="file" multiple="false" id="datafile" name="datafile" />
         <a href="" id="pyscript_data_uri"></a>
         <input type="button" value="generate Refl1D script" id="scriptbutton">
-        <input type="text" value="" width=20 id="scriptname">
+        <input type="text" value="" size="5" id="scriptname">
+        &nbsp;&nbsp;<span style="font-size: 12px;">Remote Tag:</span><input type="text" value="" size="5" id="remote_tag">
+        <!--<input type="button" value="Remote Fit" id="btnRemoteFit" disabled onclick="remotrFit()">-->
+        <input type="button" value="Remote Fit" id="btnRemoteFit" disabled>
         <button id="show_doc" style="float:right;">help</button>
     </div>
     <div id="centerpane" class="ui-layout-center">
