@@ -18,7 +18,49 @@ var THETA_M = 1.0/2.0; // 90 degrees by default.
 var AGUIDE = 270;
 
 var data_file_content = null;  // debug note
+var webSocket = null;
 
+//-----------------------------------------------------------------------------
+function composeRefl1dFitMessage(txtProblem) {
+  var message = getMessageStart();
+
+  message['command'] = ServerCommands.REFL1D_FIT;
+  message['fit_problem'] = txtProblem;
+//  message['problem_file'] = upload_problem_file();
+//  message['params'] = uploadFitParams();
+//  message['multi_processing'] = upload_multiprocessing();
+  return (message);
+}
+//-----------------------------------------------------------------------------
+function getMessageStart() {
+  var message = new Object;
+
+  message['header'] = 'bumps client';
+  message['tag']    = uploadTag();
+  message['message_time'] = getMessageTime();
+  return (message);
+}
+//-----------------------------------------------------------------------------
+function uploadTag() {
+  var tag = document.getElementById('remote_tag').value;
+  if (tag == '')
+      tag = generateTag();
+      //tag = generateTag('remote_tag');
+  return (tag);
+}
+//-----------------------------------------------------------------------------
+function getMessageTime() {
+  var d = new Date;
+  var date_json = {};
+  date_json['year'] = d.getFullYear();
+  date_json['month'] = (d.getMonth() + 1);
+  date_json['date'] = d.getDate();
+  date_json['hour'] = d.getHours();
+  date_json['minutes'] = d.getMinutes();
+  date_json['seconds'] = d.getSeconds();
+  date_json['milliseconds'] = d.getMilliseconds();
+  return (date_json);
+}
 var app_options = {
   initial_sld: [
     {thickness: 0, sld: 4.0, mu: 0, thetaM: THETA_M, sldm: 0, sldi: 0.0, roughness: 10},
@@ -1039,14 +1081,19 @@ function get_JSON() {
       return (json_table);
   }
 
+/*
   function get_json_data_name (script_filename) {
     var arr_json_data_name = [];
-    var json_file_name, json_data;
+    var json_file_data= {};
 
-    arr_json_data_name[0] = get_JSON();
-    arr_json_data_name[1] = script_filename.replace('py','json');
-    return (arr_json_data_name);
+    json_file_data['name'] = script_filename.replace('py','json');
+    json_file_data['data'] = get_JSON();
+    //arr_json_data_name[0] = get_JSON();
+    //arr_json_data_name[1] = script_filename.replace('py','json');
+    //return (arr_json_data_name);
+    return (json_file_data);
   }
+*/
 
   function add_json_file (zip, script_filename) {
     var json_file_name, json_data;
@@ -1079,28 +1126,97 @@ function get_JSON() {
     }
 
     function send_data_files (strScript, script_filename, data_file_name) {
-      var data_file_name, zip_file_name, json_file_name, json_data;
+      var zip_file_name, jsnJson, jsnScript, jsnData, msg_data = {};
       var base_name = data_file_name.split('.').slice(0, -1).join('.');
       script_filename = get_script_file_name (base_name);
       zip_file_name   = get_zip_file_name (base_name);
-      var arr_json_data_name = get_json_data_name (script_filename);
+      
+      //jsnJson = get_json_data_name (script_filename);
+      jsnJson = make_json_name_data(script_filename.replace('py','json'), get_JSON());
+      //jsnJson['name'] = script_filename.replace('py','json');
+      //jsnJson['data'] = get_JSON();
+      jsnScript = make_json_name_data (script_filename, strScript);
+      //jsnScript['name'] = script_filename;
+      //jsnScript['data'] = strScript;
+      jsnData = make_json_name_data (data_file_name, data_file_content);
+      //jsnData['name'] = data_file_name;
+      //jsnData['data'] = data_file_content;
+      msg_data['zip']    = zip_file_name;
+      msg_data['json']   = jsnJson;
+      msg_data['script'] = jsnScript;
+      msg_data['data']   = jsnData;
       try {
+        var webSocketURL = "ws://localhost:4567";
+        var message = composeRefl1dFitMessage(JSON.stringify(msg_data));
+        openWSConnection(webSocketURL, JSON.stringify(message));
+        //webSocket.send(JSON.stringify(msg_data));
+
+/*
         var zip = new JSZip();
         zip.file(script_filename, strScript);
         if (data_file_content) {
           zip.file(data_file_name, data_file_content);
         }
         add_json_file (zip, script_filename);
-        zip.generateAsync({type:"blob"})
-          .then(function(content) {
-            saveAs(content, zip_file_name);
-          });
-        }
-        catch (err) {
-          alert (err.message);
-        }
+      */
       }
-  
+      catch (err) {
+        alert (err.message);
+      }
+    }
+
+/*---*/
+/**
+ * Open a new WebSocket connection using the given parameters
+ */
+    //function openWSConnection(protocol, hostname, port, endpoint) {
+    function openWSConnection(webSocketURL, msgData) {
+      //var webSocketURL = null;
+      //webSocketURL = protocol + "://" + hostname + ":" + port + endpoint;
+      console.log("openWSConnection::Connecting to: " + webSocketURL);
+      try {
+      webSocket = new WebSocket(webSocketURL);
+      webSocket.addEventListener('error', (event) => {
+        console.log('in addEventListener');
+        console.log(event);
+      });
+      webSocket.onopen = function(openEvent) {
+        console.log("WebSocket OPEN: " + JSON.stringify(openEvent, null, 4));
+        webSocket.send(msgData);
+      };
+      webSocket.onclose = function (closeEvent) {
+        console.log("WebSocket CLOSE: " + JSON.stringify(closeEvent, null, 4));
+      };
+      webSocket.onerror = function (errorEvent) {
+        var msg = "WebSocket ERROR: " + JSON.stringify(errorEvent, null, 4);
+        console.log("WebSocket ERROR: " + JSON.stringify(errorEvent, null, 4));
+        console.log(msg);
+      };
+      webSocket.onmessage = function (messageEvent) {
+        var wsMsg = messageEvent.data;
+        console.log("WebSocket MESSAGE: " + wsMsg);
+        if (wsMsg.indexOf("error") > 0) {
+          console.log("error: " + wsMsg.error);
+        } else {
+          alert(wsMsg);
+          //document.getElementById("incomingMsgOutput").value += "message: " + wsMsg + "\r\n";
+        }
+        webSocket.close();
+      };
+    } catch (exception) {
+      console.error(exception);
+    }
+  }
+/*---*/
+
+function make_json_name_data(name, data) {
+      var jsn = {};
+
+      jsn['name'] = name;
+      jsn['data'] = data;
+      return(jsn);
+    }
+
     function get_script_file_name (script_filename) {
       if ((script_filename == null) || (script_filename.trim().length == 0)) {
         script_filename = "script";
@@ -1217,6 +1333,7 @@ function get_JSON() {
 
     document.getElementById("scriptbutton").onclick = show_script;
     document.getElementById("btnRemoteFit").onclick = send_script;
+    //document.getElementById("btnServer").onclick = server_params;
 
     function get_table_data () {
       var table_data = d3.selectAll("#sld_table table tr").data().slice(1);
@@ -1229,7 +1346,10 @@ function get_JSON() {
       var table_data = get_table_data();
       saveData(d3.tsvFormat(table_data), "sld_table.txt");
     }
-    
+
+    function server_params() {
+
+    }
     function import_table() {
       var file_input = document.getElementById('table_import_file')
       var file = file_input.files[0]; // only one file allowed
