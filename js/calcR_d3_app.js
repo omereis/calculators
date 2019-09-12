@@ -24,8 +24,9 @@ var webSocket = null;
 function composeRefl1dFitMessage(txtProblem) {
   var message = getMessageStart();
 
-  message['command'] = ServerCommands.REFL1D_FIT;
+  message['command'] = ServerCommands.START_FIT;
   message['fit_problem'] = txtProblem;
+  message['fitter'] = 'refl1d';
 //  message['problem_file'] = upload_problem_file();
 //  message['params'] = uploadFitParams();
 //  message['multi_processing'] = upload_multiprocessing();
@@ -1131,16 +1132,9 @@ function get_JSON() {
       script_filename = get_script_file_name (base_name);
       zip_file_name   = get_zip_file_name (base_name);
       
-      //jsnJson = get_json_data_name (script_filename);
-      jsnJson = make_json_name_data(script_filename.replace('py','json'), get_JSON());
-      //jsnJson['name'] = script_filename.replace('py','json');
-      //jsnJson['data'] = get_JSON();
+      jsnJson   = make_json_name_data (script_filename.replace('py','json'), get_JSON());
       jsnScript = make_json_name_data (script_filename, strScript);
-      //jsnScript['name'] = script_filename;
-      //jsnScript['data'] = strScript;
-      jsnData = make_json_name_data (data_file_name, data_file_content);
-      //jsnData['name'] = data_file_name;
-      //jsnData['data'] = data_file_content;
+      jsnData   = make_json_name_data (data_file_name, data_file_content);
       msg_data['zip']    = zip_file_name;
       msg_data['json']   = jsnJson;
       msg_data['script'] = jsnScript;
