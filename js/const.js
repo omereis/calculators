@@ -4,7 +4,6 @@ const ServerCommands = {
     GET_DATA    : 'GetData',
     GET_STATUS  : 'GetStatus',
     PRINT_STATUS: 'print_status',
-    GET_RESULTS : 'get_results',
-    REFL1D_FIT  : 'Refl1D_Fit'
+    GET_RESULTS : 'get_results'
 };
 
