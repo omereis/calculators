@@ -225,3 +225,20 @@ hr.betweenplots {
 .ui-dialog .footer {
     font-size: 80%;
 }
+/*#tblTopPanel {*/
+.tblTopPanel {
+        border: 0px;
+    width: 100%;
+    display: table;
+}
+#help_button{
+    width: 50pt;
+}
+.tblTopPanel td{
+/*.tblTopPanelTd {*/
+    border: 0;
+}
+#cellTopPanel {
+    background-color: rgb(91, 212, 228);
+    /*width: 60%;*/
+}

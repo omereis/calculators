@@ -49,14 +49,14 @@
         {}
       ],          
       plot_choices: {
-        'reflectivity':   {data: 'xy', xlabel: 'Q (Å⁻¹)', ylabel: 'R (I/I₀)', title:'Reflectivity R=|Ψ←(z=-∞)|²'},
-        'phase':          {data: 'phase', xlabel: 'Q (Å⁻¹)', ylabel: 'phase (radians)', title: 'Phase of r in complex plane (r = Ψ←)'},
+        'reflectivity':   {data: 'xy', xlabel: 'Q (Ã…â»Â¹)', ylabel: 'R (I/Iâ‚€)', title:'Reflectivity R=|Î¨â†(z=-âˆž)|Â²'},
+        'phase':          {data: 'phase', xlabel: 'Q (Ã…â»Â¹)', ylabel: 'phase (radians)', title: 'Phase of r in complex plane (r = Î¨â†)'},
       },
       sldplot_series_opts: [
-        //{label: "SLDₙ x10⁻⁶", id: "sld", color: "DodgerBlue", color1: "DodgerBlue"},
-        //{label: "iSLDₙ x10⁻⁶", id: "mu", color: "LightCoral", color1: "LightCoral"},
-        {label: "SLDn x10⁻⁶", id: "sld", color: "DodgerBlue", color1: "DodgerBlue"},
-        {label: "iSLDn x10⁻⁶", id: "mu", color: "LightCoral", color1: "LightCoral"},
+        //{label: "SLDâ‚™ x10â»â¶", id: "sld", color: "DodgerBlue", color1: "DodgerBlue"},
+        //{label: "iSLDâ‚™ x10â»â¶", id: "mu", color: "LightCoral", color1: "LightCoral"},
+        {label: "SLDn x10â»â¶", id: "sld", color: "DodgerBlue", color1: "DodgerBlue"},
+        {label: "iSLDn x10â»â¶", id: "mu", color: "LightCoral", color1: "LightCoral"},
       ],
       worker_script: "js/calc_r.js",
       series_lookup: {"unpolarized": 1},
@@ -105,14 +105,22 @@
 </head>
 <body bgcolor="#ffffcc"> 
     <div id="top_panel" class="ui-layout-north">
-        Load (*.refl) datafile: <input type="file" multiple="false" id="datafile" name="datafile" />
-        <a href="" id="pyscript_data_uri"></a>
-        <input type="button" value="generate Refl1D script" id="scriptbutton">
-        <input type="text" value="" size="5" id="scriptname">
-        &nbsp;&nbsp;<span style="font-size: 12px;">Remote Tag:</span><input type="text" value="" size="5" id="remote_tag">
-        <!--<input type="button" value="Remote Fit" id="btnRemoteFit" disabled onclick="remotrFit()">-->
-        <input type="button" value="Remote Fit" id="btnRemoteFit" disabled>
-        <button id="show_doc" style="float:right;">help</button>
+        <!--<table id="tblTopPanel">-->
+        <table id="tblTop" class="tblTopPanel">
+          <tr class="tblTopPanelTd">
+            <td>Data File (*.refl): <input type="file" multiple="false" id="datafile" name="datafile"></td>
+            <td><input type="button" value="Generate Refl1D Script..." id="scriptbutton"></td>
+            <td><input type="text" value="" size="5" id="scriptname"></td>
+            <td>Remote Tag:</td> 
+            <td><input type="text" value="" size="5" id="remote_tag"></td>
+            <td><input type="button" value="Remote Fit" id="btnRemoteFit" disabled></td>
+            <td>Remote ID: <input type="text" id="inRemoteID" value="" size="2"></input></td>
+            <td><input type="button" value="Remote Status" id="btnRemoteStatus"></td>
+            <td><span id="spanRemoteStatus">Remote status</span></td>
+            <td id="help_button"><button id="show_doc" style="float:right;">help</button></td>
+          </tr>
+          <tr style="align-self: right">
+        </table>
     </div>
     <div id="centerpane" class="ui-layout-center">
         <div id='rplot'></div>
@@ -142,4 +150,4 @@
   </script>
 </body>
 </html>
-
+ 

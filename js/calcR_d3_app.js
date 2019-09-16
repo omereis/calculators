@@ -19,18 +19,40 @@ var AGUIDE = 270;
 
 var data_file_content = null;  // debug note
 var webSocket = null;
+var webSocketURL = "ws://localhost:4567";
+var timerRemoteStatus = null;
 
 //-----------------------------------------------------------------------------
 function composeRefl1dFitMessage(txtProblem) {
   var message = getMessageStart();
 
   message['command'] = ServerCommands.START_FIT;
-  message['fit_problem'] = txtProblem;
+  message['refl1d_problem'] = txtProblem;
   message['fitter'] = 'refl1d';
-//  message['problem_file'] = upload_problem_file();
-//  message['params'] = uploadFitParams();
-//  message['multi_processing'] = upload_multiprocessing();
   return (message);
+}
+//-----------------------------------------------------------------------------
+function composeRefl1dStatusMessage() {
+  var message = null, id = uploadRemoteID();
+  if (Number(id) > 0) {
+    message = getMessageStart();
+    message['command'] = ServerCommands.GET_STATUS;
+    message['params'] = id;
+    message['fitter'] = 'refl1d';
+  }
+  return (message);
+}
+//-----------------------------------------------------------------------------
+function uploadRemoteID() {
+  var id;
+  //var s = document.getElementById('spanRemoteID');
+  var s = document.getElementById('inRemoteID');
+  if (s)
+    //id = s.innerText;
+    id = s.value;
+  else
+    id = '';
+  return (id);
 }
 //-----------------------------------------------------------------------------
 function getMessageStart() {
@@ -968,7 +990,51 @@ var app_init = function(opts) {
     }
 
     function send_script () {
+      setRemoteID ('');
       export_script('websocket');
+      timerRemoteStatus = setInterval (readRemoteStatus, 500);
+    }
+
+    function onRemoteStatus() {
+      stopStatusTimer();
+      var message = composeRefl1dStatusMessage();
+      if (message == null) {
+        alert("can't send status");
+      }
+      else {
+          setRemoteStatus ('');
+          openWSConnection(webSocketURL, JSON.stringify(message));
+      }
+    }
+
+var readCounter = 0;
+var fReadRemoteStatusBusy = false;
+
+    function readRemoteStatus() {
+      if (!fReadRemoteStatusBusy) {
+        var message = composeRefl1dStatusMessage();
+        if (message) {
+          fReadRemoteStatusBusy = true;
+          try {
+            openWSConnection(webSocketURL, JSON.stringify(message));
+          }
+          catch (err) {
+            console.log(err);
+          }
+          finally {
+            fReadRemoteStatusBusy = false;
+          }
+        }
+      }
+      console.log('reading status');
+/*
+      readCounter++;
+      if (readCounter > 10) {
+        clearInterval (timerRemoteStatus);
+        timerRemoteStatus = null;
+        readCounter = 0;
+      }
+*/
     }
 
     function export_script(export_dest) {
@@ -1140,33 +1206,28 @@ function get_JSON() {
       msg_data['script'] = jsnScript;
       msg_data['data']   = jsnData;
       try {
-        var webSocketURL = "ws://localhost:4567";
         var message = composeRefl1dFitMessage(JSON.stringify(msg_data));
         openWSConnection(webSocketURL, JSON.stringify(message));
-        //webSocket.send(JSON.stringify(msg_data));
-
-/*
-        var zip = new JSZip();
-        zip.file(script_filename, strScript);
-        if (data_file_content) {
-          zip.file(data_file_name, data_file_content);
-        }
-        add_json_file (zip, script_filename);
-      */
       }
       catch (err) {
         alert (err.message);
       }
     }
 
-/*---*/
-/**
+    function message_to_json(wsMsg) {
+      var p = wsMsg.indexOf("'");
+      while (p >= 0) {
+        wsMsg = wsMsg.replace("'", '"');
+        p = wsMsg.indexOf("'");
+      }
+      return (wsMsg);
+    }
+
+    /**
  * Open a new WebSocket connection using the given parameters
  */
     //function openWSConnection(protocol, hostname, port, endpoint) {
     function openWSConnection(webSocketURL, msgData) {
-      //var webSocketURL = null;
-      //webSocketURL = protocol + "://" + hostname + ":" + port + endpoint;
       console.log("openWSConnection::Connecting to: " + webSocketURL);
       try {
       webSocket = new WebSocket(webSocketURL);
@@ -1187,23 +1248,71 @@ function get_JSON() {
         console.log(msg);
       };
       webSocket.onmessage = function (messageEvent) {
-        var wsMsg = messageEvent.data;
-        console.log("WebSocket MESSAGE: " + wsMsg);
-        if (wsMsg.indexOf("error") > 0) {
-          console.log("error: " + wsMsg.error);
-        } else {
-          alert(wsMsg);
-          //document.getElementById("incomingMsgOutput").value += "message: " + wsMsg + "\r\n";
-        }
+        HandleWSReply (messageEvent.data);
+        //var wsMsg = messageEvent.data;
+        //display_remote_id(wsMsg)
+        console.log("WebSocket MESSAGE: " + messageEvent.data);
         webSocket.close();
       };
     } catch (exception) {
       console.error(exception);
     }
   }
-/*---*/
 
-function make_json_name_data(name, data) {
+  function HandleWSReply (wsMsg) {
+    var wjMsg = JSON.parse(message_to_json(wsMsg));
+
+    if (wjMsg.command == ServerCommands.START_FIT) {
+      display_remote_id(wjMsg);
+    }
+    else if (wjMsg.command == ServerCommands.GET_STATUS) {
+      HandleStatusReply(wjMsg);
+    }
+    console.log(wjMsg);
+  }
+
+  function display_remote_id(wjMsg) {
+    var p = wjMsg.params;
+    var keys = [];
+    for (var k in p) keys.push(k);
+    var remote_id = p[keys[0]];
+    setRemoteID (remote_id);
+  }
+
+  function setRemoteID (remote_id) {
+    document.getElementById("inRemoteID").value = remote_id;
+  }
+  
+  function setRemoteStatus (job_status) {
+    document.getElementById('spanRemoteStatus').innerText = job_status;
+  }
+  
+  function getRemoteStatus () {
+    return (document.getElementById('spanRemoteStatus').innerText);
+  }
+
+  function HandleStatusReply(wjMsg) {
+    console.log(wjMsg);
+    if (wjMsg.params.length >= 0) {
+      var guiID = uploadRemoteID(), remoteID = wjMsg.params[0].job_id;
+      if ((Number(guiID) > 0) && (Number(guiID) == remoteID)) {
+        var remote_job_status = wjMsg.params[wjMsg.params.length - 1].job_status.toLowerCase();
+        setRemoteStatus (remote_job_status);
+        if (remote_job_status == 'completed') {
+          stopStatusTimer();
+        }
+      }
+    }
+  }
+
+  function stopStatusTimer() {
+    if (timerRemoteStatus) {
+      clearInterval (timerRemoteStatus);
+      timerRemoteStatus = null;
+    }
+  }
+
+  function make_json_name_data(name, data) {
       var jsn = {};
 
       jsn['name'] = name;
@@ -1327,7 +1436,7 @@ function make_json_name_data(name, data) {
 
     document.getElementById("scriptbutton").onclick = show_script;
     document.getElementById("btnRemoteFit").onclick = send_script;
-    //document.getElementById("btnServer").onclick = server_params;
+    document.getElementById("btnRemoteStatus").onclick = onRemoteStatus;
 
     function get_table_data () {
       var table_data = d3.selectAll("#sld_table table tr").data().slice(1);
