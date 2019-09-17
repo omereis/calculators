@@ -1355,7 +1355,7 @@ function get_JSON() {
 
   function HandleRefl1dRessults(wjMsg) {
     var hexJson = wjMsg.params.json_data;
-    var n, strBuf = '', strJson, jsonRes;
+    var n, strBuf = '', strJson, jsonRes, out="";
     var tblResults = ['thickness'	+ '\t' + 'sld'	+ '\t' + 'mu'	+ '\t' + 'roughness'];
 
     for (n = 0 ; n < hexJson.length ; n += 2) {
@@ -1371,6 +1371,9 @@ function get_JSON() {
     }
     var strResults = tblResults.join('\n');
     update_from_imported_table (strResults);
+    var txt = show_fit_alphanumeric_output(out, 88.381, 17);
+    d3.select("pre.fit.log").text(txt);
+
   }
 
   function sendForJsonResuls(remoteID) {
@@ -1644,10 +1647,15 @@ function get_JSON() {
           ptr++;
         })
       });
-      output += "\n";
-      output += "reduced chi-squared = \t" + params.wrmserror.toPrecision(6) + "\n";
-      output += "iterations = \t" + params.iterations.toFixed() + "\n";
+      output += show_fit_alphanumeric_output(output, params.wrmserror.toPrecision(6), params.iterations.toFixed());
       return output;
+    }
+
+    function show_fit_alphanumeric_output(output, chi_square, iterations) {
+      output += "\n";
+      output += "reduced chi-squared = \t" + chi_square + "\n";
+      output += "iterations = \t" + iterations + "\n";
+      return (output);
     }
 
     function fit() {
@@ -1678,7 +1686,8 @@ function get_JSON() {
       //d3.selectAll("div#sld_table table tbody tr").data(initial_sld);
       show_results (initial_sld);
 
-      d3.select("pre.fit.log").text(fit_report(result, to_fit));    
+      var txt = fit_report(result, to_fit);
+      d3.select("pre.fit.log").text(txt);
     }
 
     function show_results (initial_sld) {
