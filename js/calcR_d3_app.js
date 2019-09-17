@@ -21,6 +21,7 @@ var data_file_content = null;  // debug note
 var webSocket = null;
 var webSocketURL = "ws://localhost:4567";
 var timerRemoteStatus = null;
+var timerRemoteResults = null;
 
 //-----------------------------------------------------------------------------
 function composeRefl1dFitMessage(txtProblem) {
@@ -1027,7 +1028,13 @@ var app_init = function(opts) {
       var id = uploadRemoteID();
       var remote_message = composeRefl1dFitResults(id);
       try {
-        openWSConnection(webSocketURL, JSON.stringify(remote_message));
+        if (webSocket.readyState == webSocket.CLOSED) {
+          openWSConnection(webSocketURL, JSON.stringify(remote_message));
+          if (timerRemoteResults != null) {
+            clearInterval (timerRemoteResults);
+            timerRemoteResults = null;
+          }
+        }
       }
       catch (err) {
         console.log(err);
@@ -1336,9 +1343,9 @@ function get_JSON() {
         var remote_job_status = wjMsg.params[wjMsg.params.length - 1].job_status.toLowerCase();
         setRemoteStatus (remote_job_status);
         if (remote_job_status == 'completed') {
-//          document.getElementById('btnRemoteTbl').disabled = false;
           stopStatusTimer();
-          //sendForJsonResuls(uploadRemoteID());
+          //setTimeout (onRemoteTable(), 150);
+          timerRemoteResults = setInterval (onRemoteTable, 150);
         }
       }
     }
