@@ -350,10 +350,10 @@ function generateTag() {
     return (latest_tag);
 }
 //var local_tag = 'reflectivity_tag';
-var local_tag = 'bumps_tag';
+var local_tag_name = 'bumps_tag';
 //-----------------------------------------------------------------------------
 function get_latest_tag() {
-    current_tags = localStorage.getItem(local_tag);
+    current_tags = localStorage.getItem(local_tag_name);
     if (current_tags != null) {
         all_tags = current_tags.split(';');
         latest_tag = all_tags[0];
@@ -365,7 +365,7 @@ function get_latest_tag() {
 }
 //-----------------------------------------------------------------------------
 function save_tag_to_local(tag) {
-    current_tags = localStorage.getItem(local_tag);
+    current_tags = localStorage.getItem(local_tag_name);
     if (current_tags == null)
         current_tags = tag;
     else {
@@ -379,10 +379,11 @@ function save_tag_to_local(tag) {
         all_tags.splice(0,1,tag);
         current_tags = all_tags.join(';');
     }
-    localStorage.setItem('bumps_tags',current_tags);
+    localStorage.setItem(local_tag_name,current_tags);
     return (tag);
 }
 //-----------------------------------------------------------------------------
+/*
 function save_tag_to_local(tag) {
     current_tags = localStorage.getItem('bumps_tags');
     if (current_tags == null)
@@ -401,3 +402,4 @@ function save_tag_to_local(tag) {
     localStorage.setItem('bumps_tags',current_tags);
     return (tag);
 }
+*/

@@ -32,6 +32,15 @@ function composeRefl1dFitMessage(txtProblem) {
   return (message);
 }
 //-----------------------------------------------------------------------------
+function composeRefl1dFitResults(remoteID) {
+  var message = getMessageStart();
+
+  message['command'] = ServerCommands.GET_REFL1D_RESULTS;
+  message['params'] = remoteID;//.toString();
+  message['fitter'] = 'refl1d';
+  return (message);
+}
+//-----------------------------------------------------------------------------
 function composeRefl1dStatusMessage() {
   var message = null, id = uploadRemoteID();
   if (Number(id) > 0) {
@@ -155,7 +164,13 @@ var app_options = {
 };
 
 var app_init = function(opts) {
-    var layout = $('body').layout({
+  try {
+    document.getElementById('remote_tag').value = generateTag();
+  }
+  catch (err) {
+    console.log(err);
+  }
+      var layout = $('body').layout({
            west__size:          0
         ,  east__size:          opts.east_size
         ,  south__size:         200
@@ -992,6 +1007,7 @@ var app_init = function(opts) {
     function send_script () {
       setRemoteID ('');
       export_script('websocket');
+      save_tag_to_local(uploadTag());
       timerRemoteStatus = setInterval (readRemoteStatus, 500);
     }
 
@@ -1006,6 +1022,17 @@ var app_init = function(opts) {
           openWSConnection(webSocketURL, JSON.stringify(message));
       }
     }
+
+    function onRemoteTable () {
+      var id = uploadRemoteID();
+      var remote_message = composeRefl1dFitResults(id);
+      try {
+        openWSConnection(webSocketURL, JSON.stringify(remote_message));
+      }
+      catch (err) {
+        console.log(err);
+      }
+}
 
 var readCounter = 0;
 var fReadRemoteStatusBusy = false;
@@ -1260,15 +1287,25 @@ function get_JSON() {
   }
 
   function HandleWSReply (wsMsg) {
-    var wjMsg = JSON.parse(message_to_json(wsMsg));
+    try {
+      //var txt = message_to_json(wsMsg);
+      //var j = JSON.parse(txt);
+      var wjMsg = JSON.parse(message_to_json(wsMsg));
 
-    if (wjMsg.command == ServerCommands.START_FIT) {
-      display_remote_id(wjMsg);
+      if (wjMsg.command == ServerCommands.START_FIT) {
+        display_remote_id(wjMsg);
+      }
+      else if (wjMsg.command == ServerCommands.GET_STATUS) {
+        HandleStatusReply(wjMsg);
+      }
+      else if (wjMsg.command == ServerCommands.GET_REFL1D_RESULTS) {
+        HandleRefl1dRessults(wjMsg);
+      }
     }
-    else if (wjMsg.command == ServerCommands.GET_STATUS) {
-      HandleStatusReply(wjMsg);
+    catch (err) {
+      console.log(err);
+      alert (wsMsg);
     }
-    console.log(wjMsg);
   }
 
   function display_remote_id(wjMsg) {
@@ -1299,10 +1336,46 @@ function get_JSON() {
         var remote_job_status = wjMsg.params[wjMsg.params.length - 1].job_status.toLowerCase();
         setRemoteStatus (remote_job_status);
         if (remote_job_status == 'completed') {
+//          document.getElementById('btnRemoteTbl').disabled = false;
           stopStatusTimer();
+          //sendForJsonResuls(uploadRemoteID());
         }
       }
     }
+  }
+
+  function getLayerAsText (layer) {
+    var txt;
+    txt = layer.thickness.value.toString() + '\t' + 
+          layer.interface.value.toString() + '\t' + 
+          layer.rho.value.toString() + '\t' + 
+          layer.irho.value.toString();
+    return (txt);
+  }
+
+  function HandleRefl1dRessults(wjMsg) {
+    var hexJson = wjMsg.params.json_data;
+    var n, strBuf = '', strJson, jsonRes;
+    var tblResults = ['thickness'	+ '\t' + 'sld'	+ '\t' + 'mu'	+ '\t' + 'roughness'];
+
+    for (n = 0 ; n < hexJson.length ; n += 2) {
+      var hVal = (parseInt(hexJson[n], 16)  * 0x10) + parseInt (hexJson[n + 1], 16);
+      strBuf += String.fromCharCode(hVal);
+    }
+    strJson = strBuf.replace(/Infinity/g,'1e308');
+    jsonRes = JSON.parse(strJson);
+    var layers = jsonRes.sample.layers;
+    for (n=0 ; n < layers.length ; n++) {
+      var txtLayer = getLayerAsText (layers[n]);
+      tblResults[n + 1] = txtLayer;
+    }
+    var strResults = tblResults.join('\n');
+    update_from_imported_table (strResults);
+  }
+
+  function sendForJsonResuls(remoteID) {
+    alert ('Sending for results for ID ' + remoteID);
+    //document.getElementById('btnRemoteTbl').disabled = false;
   }
 
   function stopStatusTimer() {
@@ -1437,6 +1510,7 @@ function get_JSON() {
     document.getElementById("scriptbutton").onclick = show_script;
     document.getElementById("btnRemoteFit").onclick = send_script;
     document.getElementById("btnRemoteStatus").onclick = onRemoteStatus;
+    document.getElementById("btnRemoteTbl").onclick = onRemoteTable;
 
     function get_table_data () {
       var table_data = d3.selectAll("#sld_table table tr").data().slice(1);
@@ -1450,9 +1524,6 @@ function get_JSON() {
       saveData(d3.tsvFormat(table_data), "sld_table.txt");
     }
 
-    function server_params() {
-
-    }
     function import_table() {
       var file_input = document.getElementById('table_import_file')
       var file = file_input.files[0]; // only one file allowed
@@ -1460,26 +1531,31 @@ function get_JSON() {
       file_input.value = "";
       var reader = new FileReader();
       reader.onload = function(e) {
-        var new_sld = d3.tsvParse(this.result);
-        new_sld.forEach(function(d) {
-          for (var key in d) {
-            if (d.hasOwnProperty(key)) {
-              // convert everything to numbers.
-              d[key] = +d[key];
-            }
-          }
-        });
-        initial_sld.splice(0, initial_sld.length + 1);
-        $.extend(true, initial_sld, new_sld);
-        table_draw(initial_sld);
-        update_profile_limits(initial_sld);
-        profile_interactor.update();
-        sld_plot.resetzoom();
-        update_plot_live();
+        update_from_imported_table (this.result);
       }
       reader.readAsText(file);
     }
     
+    function update_from_imported_table (result) {
+      //var new_sld = d3.tsvParse(this.result);
+      var new_sld = d3.tsvParse(result);
+      new_sld.forEach(function(d) {
+        for (var key in d) {
+          if (d.hasOwnProperty(key)) {
+            // convert everything to numbers.
+            d[key] = +d[key];
+          }
+        }
+      });
+      initial_sld.splice(0, initial_sld.length + 1);
+      $.extend(true, initial_sld, new_sld);
+      table_draw(initial_sld);
+      update_profile_limits(initial_sld);
+      profile_interactor.update();
+      sld_plot.resetzoom();
+      update_plot_live();
+  }
+
     function get_to_fit() {
       var to_fit = [];
       var data_table = d3.select("div#sld_table table tbody");
