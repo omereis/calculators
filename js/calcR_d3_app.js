@@ -1376,9 +1376,17 @@ function get_JSON() {
       var txtLayer = getLayerAsText (layers[n]);
       tblResults[n + 1] = txtLayer;
     }
-    var strResults = tblResults.join('\n');
+    var strChi, strResults = tblResults.join('\n');
+    try {
+      strChi = wjMsg.params.chi_square;
+    }
+    catch (err) {
+      console.log(err);
+      strChi = err;
+    }
     update_from_imported_table (strResults);
-    var txt = show_fit_alphanumeric_output(out, 88.381, 17);
+    //var txt = show_fit_alphanumeric_output(out, 88.381, 17);
+    var txt = show_fit_alphanumeric_output(out, strChi, 'undefined');
     d3.select("pre.fit.log").text(txt);
 
   }
