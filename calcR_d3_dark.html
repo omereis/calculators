@@ -103,23 +103,33 @@
   }
 </script>
 </head>
-<body bgcolor="#ffffcc"> 
+<body bgcolor="#ffffcc">
     <div id="top_panel" class="ui-layout-north">
         <table id="tblTop" class="tblTopPanel">
           <tr>
               <td style="text-align: left;">Data File (*.refl): <input type="file" multiple="false" id="datafile" name="datafile"></td>
               <td style="text-align: center;text-align: right;"><input type="button" value="Generate Refl1D Script..." id="scriptbutton"></td>
               <td width="100px" style="text-align: left;"><input type="text" value="" size="5" id="scriptname"></td>
-              <td colspan="3" id="help_button" style="text-align: left;"><button id="show_doc" style="float:right;">help</button></td>
+              <!--<td colspan="3" id="help_button" style="text-align: left;"><button id="show_doc" style="float:right;">help</button></td>-->
+              <td id="help_button" style="text-align: left;"><button id="show_doc" style="float:right;">help</button></td>
+              <!--<td><span class="intro" id="classTest">intro class</span></td>
+              <td><input type="button" class="clsRemoteFit" id="btnClassTest" value="Button Test" disabled></td>
+              intro-->
           </tr>
-            <tr style="background-color: cornflowerblue;">
+            <tr>
               <td width="125px" style="text-align: right;">Remote Tag:</td> 
               <td style="text-align: left;"><input type="text" value="" size="5" id="remote_tag"></td>
-              <td ><input type="button" value="Refl1D Fit" id="btnRemoteFit" disabled></td>
+              <td ><input type="button" class="clsRemoteFit" value="Refl1D Fit" id="btnRemoteFit" disabled></td>
+              <td ><input type="checkbox" checked id="cboxRemoteFit">Use Celery</td>
               <td >Remote ID: <input type="text" id="inRemoteID" value="" size="2"></input></td>
               <td ><input type="button" value="Remote Status" id="btnRemoteStatus"></td>
               <td ><span id="spanRemoteStatus">Remote status</span></td>
-              <td ><input class="btnRemote" type="button" value="Load Remote Table" id="btnRemoteTbl"></td>
+              <td ><input type="button" value="Load Remote Table" id="btnRemoteTbl"></td>
+              <td style="text-align: right;">Local ID:</td>
+              <!--<td><span id="spanLocalID" class="clsLocalID">Undefined</span></td>-->
+              <td><span id="spanLocalID" class="clsLocalFit"
+                  style="background-color: rgb(231, 231, 231);font-family: 'Times New Roman', Times, serif;">Undefined</span></td>
+              <!--<td><span id="spanLocalID" class="clsLocalFit" style="background-color: rgb(224, 224, 224);border: 1px solid black;">Undefined</span></td>-->
             </tr>
           </table>
     </div>

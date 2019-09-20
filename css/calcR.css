@@ -241,8 +241,20 @@ hr.betweenplots {
     text-align: center;
 }
 #cellTopPanel {
-    background-color: rgb(91, 212, 228);
+    background-color: blue;
     /*width: 60%;*/
+}
+.clsRemoteFit {
+    color: blue;
+    
+}
+.clsRemoteFit:disabled {
+    color: rgba(158, 158, 158, 0.589);
+}
+
+.clsLocalID {
+    background-color: darkgray;
+    border: 1px solid black;
 }
 
 /*
