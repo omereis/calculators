@@ -4,15 +4,7 @@
 //import XYChart from '../../d3-science/lib/xy-chart';
 //import default as profileInteractor from '../../d3-science/profile-interactor';
 "use strict";
-/*
-var JSZip = document.createElement('script');
-try {
-  JSZip.src = 'zip/JSZip.js';
-}
-catch (err) {
-  alert (err.message);
-}
-*/
+
 //var THETA_M = Math.PI * 3.0 / 2.0; // 270 degrees by default
 var THETA_M = 1.0/2.0; // 90 degrees by default.
 var AGUIDE = 270;
@@ -24,12 +16,24 @@ var timerRemoteStatus = null;
 var timerRemoteResults = null;
 
 //-----------------------------------------------------------------------------
+function upload_multiprocessing() {
+  var mp='', cbox = document.getElementById('cboxRemoteFit');
+
+  if (cbox) {
+    if (cbox.checked) {
+      mp = 'celery';
+    }
+  }
+  return (mp);
+}
+//-----------------------------------------------------------------------------
 function composeRefl1dFitMessage(txtProblem) {
   var message = getMessageStart();
 
   message['command'] = ServerCommands.START_FIT;
   message['refl1d_problem'] = txtProblem;
   message['fitter'] = 'refl1d';
+  message['multi_processing'] = upload_multiprocessing();
   return (message);
 }
 //-----------------------------------------------------------------------------
@@ -1006,10 +1010,15 @@ var app_init = function(opts) {
     }
 
     function send_script () {
-      setRemoteID ('');
-      export_script('websocket');
-      save_tag_to_local(uploadTag());
-      timerRemoteStatus = setInterval (readRemoteStatus, 500);
+      if (get_data_file_name() == null) {
+        alert('Please load data file');
+      }
+      else {
+        setRemoteID ('');
+        export_script('websocket');
+        save_tag_to_local(uploadTag());
+        timerRemoteStatus = setInterval (readRemoteStatus, 500);
+      }
     }
 
     function onRemoteStatus() {
