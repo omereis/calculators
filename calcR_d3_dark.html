@@ -32,6 +32,9 @@
     <!--<script src="/calculators/js/remote_fit.js" charset="utf-8"></script>-->
     <script src="/calculators/js/const.js" charset="utf-8"></script>
     <script src="/calculators/js/calcR_d3_app.js" charset="utf-8"></script>
+
+    <script src="/calculators/js/remote_setup.js" charset="utf-8"></script>
+    <link rel="stylesheet" href="css/remote_setup.css"/>
    
 <script type="text/javascript">
     var THETA_M = Math.PI * 3.0 / 2.0; // 270 degrees by default
@@ -104,13 +107,35 @@
 </script>
 </head>
 <body bgcolor="#ffffcc">
-    <div id="top_panel" class="ui-layout-north">
+  <div id="top_panel" class="ui-layout-north">
+      <button onclick="openMyDialog('dlgContact')">My Dialog</button>
+      <button onclick="loadRemoteParams()">Load Local Parameters</button>
+      <button onclick="saveRemoteParams()">Save Local Parameters</button>
+      Server: <input type="text" id="txtRemoteServer" placeholder="Remote Server" size="10">
+      Port: <input type="text" id="txtRemotePort" placeholder="Port" size="5">
+      <div id="dlgContact" title="Contact form">
+          <button onclick="closeMyDialog('dlgContact', 'OK')">OK</button>
+          <button onclick="closeMyDialog('dlgContact', 'Cancel')">Cancel</button>
+        <p>appear now</p>
+      </div>
+<!---->
+          <div role="dialog" id="dialog1" aria-labelledby="dialog1_label" aria-modal="true" class="hidden">
+          <hr>
+          <h2 id="dialog1_label" class="dialog_label">
+            <p>JuJu</p>
+            Add Delivery Address
+          </h2>
+          <button onclick="closeDialog(this)">Cancel</button>
+        </div>
+<!---->
+        <hr>
         <table id="tblTop" class="tblTopPanel">
           <tr>
               <td style="text-align: left;">Data File (*.refl): <input type="file" multiple="false" id="datafile" name="datafile"></td>
               <td style="text-align: center;text-align: right;"><input type="button" value="Generate Refl1D Script..." id="scriptbutton"></td>
               <td width="100px" style="text-align: left;"><input type="text" value="" size="5" id="scriptname"></td>
               <!--<td colspan="3" id="help_button" style="text-align: left;"><button id="show_doc" style="float:right;">help</button></td>-->
+              <td><button onclick="openDialog('dialog1', this)">Add Delivery Address</button></td>
               <td id="help_button" style="text-align: left;"><button id="show_doc" style="float:right;">help</button></td>
               <!--<td><span class="intro" id="classTest">intro class</span></td>
               <td><input type="button" class="clsRemoteFit" id="btnClassTest" value="Button Test" disabled></td>
@@ -129,12 +154,14 @@
               <!--<td><span id="spanLocalID" class="clsLocalID">Undefined</span></td>-->
               <td><span id="spanLocalID" class="clsLocalFit"
                   style="background-color: rgb(231, 231, 231);font-family: 'Times New Roman', Times, serif;">Undefined</span></td>
+                <td style="border: 1px dashed darkblue;"><input type=button id="btnGetLocalID" value="Get Local ID"></td>
               <!--<td><span id="spanLocalID" class="clsLocalFit" style="background-color: rgb(224, 224, 224);border: 1px solid black;">Undefined</span></td>-->
             </tr>
           </table>
-    </div>
+        
+      </div>
     <div id="centerpane" class="ui-layout-center">
-        <div id='rplot'></div>
+      <div id='rplot'></div>
         <hr class="betweenplots">
         <div id='sldplot'></div>
     </div>
@@ -149,10 +176,20 @@
           <footer></footer>
       </div>
     </div>
-    <div id="bottom_controls" align='center'></div>
+
+      <div id="bottom_controls" align='center'></div>
     <div id="documentation_popup" ></div>
   <script>
-    var author = document.querySelector("meta[name='author']").getAttribute("content");
+    //loadFromLocal ();
+    $(function() {
+  // dialog initializes
+  // source: https://stackoverflow.com/questions/10867077/jquery-dialog-popup
+      $("#dlgContact").dialog({
+        autoOpen : false, modal : true, show : "blind", hide : "blind"
+      });
+
+    });
+   var author = document.querySelector("meta[name='author']").getAttribute("content");
     var footer_html = "Last modified " + document.lastModified + " by website owner: NCNR (attn: " + author + ")";
     footer_html += '<br> Please cite as ';
     footer_html += '<a href="https://doi.org/10.6028/jres.122.034">https://doi.org/10.6028/jres.122.034</a>';

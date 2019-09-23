@@ -13,9 +13,7 @@ var data_file_content = null;  // debug note
 var webSocket = null;
 var webSocketURL = "ws://localhost:4567";
 var timerRemoteStatus = null;
-var timerRemoteResults = null;
 
-//-----------------------------------------------------------------------------
 function upload_multiprocessing() {
   var mp='', cbox = document.getElementById('cboxRemoteFit');
 
@@ -34,6 +32,16 @@ function composeRefl1dFitMessage(txtProblem) {
   message['refl1d_problem'] = txtProblem;
   message['fitter'] = 'refl1d';
   message['multi_processing'] = upload_multiprocessing();
+  return (message);
+}
+//-----------------------------------------------------------------------------
+function composeGetLocalIDMessage() {
+  var message = getMessageStart();
+
+  message['command'] = ServerCommands.GET_LOCAL_ID;
+  //message['refl1d_problem'] = '';
+  message['fitter'] = 'refl1d';
+  //message['multi_processing'] = upload_multiprocessing();
   return (message);
 }
 //-----------------------------------------------------------------------------
@@ -1039,19 +1047,19 @@ var app_init = function(opts) {
       try {
         if (webSocket.readyState == webSocket.CLOSED) {
           openWSConnection(webSocketURL, JSON.stringify(remote_message));
-          if (timerRemoteResults != null) {
-            clearInterval (timerRemoteResults);
-            timerRemoteResults = null;
-          }
         }
       }
       catch (err) {
         console.log(err);
       }
-}
+  }
 
-var readCounter = 0;
-var fReadRemoteStatusBusy = false;
+  function onGetLocalID () {
+      var message = composeGetLocalIDMessage();
+      openWSConnection(webSocketURL, JSON.stringify(message));
+  }
+
+  var fReadRemoteStatusBusy = false;
 
     function readRemoteStatus() {
       if (!fReadRemoteStatusBusy) {
@@ -1353,8 +1361,7 @@ function get_JSON() {
         setRemoteStatus (remote_job_status);
         if (remote_job_status == 'completed') {
           stopStatusTimer();
-          //setTimeout (onRemoteTable(), 150);
-          timerRemoteResults = setInterval (onRemoteTable, 150);
+          setTimeout (onRemoteTable, 250);
         }
       }
     }
@@ -1407,8 +1414,13 @@ function get_JSON() {
 
   function stopStatusTimer() {
     if (timerRemoteStatus) {
-      clearInterval (timerRemoteStatus);
-      timerRemoteStatus = null;
+      try {
+        clearInterval (timerRemoteStatus);
+        timerRemoteStatus = null;
+      }
+      catch (err) {
+        console.log(err);
+      }
     }
   }
 
@@ -1538,6 +1550,7 @@ function get_JSON() {
     document.getElementById("btnRemoteFit").onclick = send_script;
     document.getElementById("btnRemoteStatus").onclick = onRemoteStatus;
     document.getElementById("btnRemoteTbl").onclick = onRemoteTable;
+    document.getElementById("btnGetLocalID").onclick = onGetLocalID;
 
     function get_table_data () {
       var table_data = d3.selectAll("#sld_table table tr").data().slice(1);
