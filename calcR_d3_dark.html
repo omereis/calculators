@@ -33,7 +33,7 @@
     <script src="/calculators/js/const.js" charset="utf-8"></script>
     <script src="/calculators/js/calcR_d3_app.js" charset="utf-8"></script>
 
-    <script src="/calculators/js/remote_setup.js" charset="utf-8"></script>
+    <script src="/calculators/js/remote_fit.js" charset="utf-8"></script>
     <link rel="stylesheet" href="css/remote_setup.css"/>
    
 <script type="text/javascript">
@@ -180,7 +180,7 @@
       <div id="bottom_controls" align='center'></div>
     <div id="documentation_popup" ></div>
   <script>
-    //loadFromLocal ();
+    webSocketURL = loadRemoteParams();
     $(function() {
   // dialog initializes
   // source: https://stackoverflow.com/questions/10867077/jquery-dialog-popup
