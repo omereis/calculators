@@ -8,6 +8,7 @@ var aria = aria || {};
 var remoteParamsStorage='bumpsRemoteServer';
 var remoteServer;
 var remotePort;
+var urlWebSocket = null;
 
 aria.Utils = aria.Utils || {};
 
@@ -427,15 +428,18 @@ function setRemoteDefaults() {
 }
 //-----------------------------------------------------------------------------
 function loadRemoteParams () {
-  var remoteData = loadFromLocal ();
+  var remoteData = loadFromLocal (), url;
 
   try {
     document.getElementById('txtRemoteServer').value = remoteData.server;
     document.getElementById('txtRemotePort').value = remoteData.port;
+    url = 'ws://' + remoteData.server + ':' + remoteData.port;
   }
   catch (err) {
     console.log(err);
+    url - null;
   }
+  return (url);
 }
 //-----------------------------------------------------------------------------
 function saveRemoteParams (remoteServer, remotePort) {
