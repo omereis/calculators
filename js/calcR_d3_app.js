@@ -11,7 +11,7 @@ var AGUIDE = 270;
 
 var data_file_content = null;  // debug note
 var webSocket = null;
-var webSocketURL = "ws://localhost:4567";
+var webSocketURL;// = "ws://localhost:4567";
 var timerRemoteStatus = null;
 
 function upload_multiprocessing() {
