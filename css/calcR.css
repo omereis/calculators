@@ -227,7 +227,7 @@ hr.betweenplots {
 }
 /*#tblTopPanel {*/
 .tblTopPanel {
-        border: 0px;
+    border: 0px;
     width: 100%;
     display: table;
 }
@@ -243,6 +243,17 @@ hr.betweenplots {
 #cellTopPanel {
     background-color: blue;
     /*width: 60%;*/
+}
+.tblDlgPanel {
+    border: 0px;
+    width: 100%;
+    display: table;
+}
+.tblDlgPanel td
+{
+        border: 0;
+        white-space: nowrap;
+        text-align: center;
 }
 .clsRemoteFit {
     color: blue;

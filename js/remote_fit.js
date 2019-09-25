@@ -138,7 +138,8 @@ aria.Utils.isFocusable = function (element) {
   aria.handleEscape = function (event) {
     var key = event.which || event.keyCode;
 
-    if (key === aria.KeyCode.ESC && aria.closeCurrentDialog()) {
+    //if (key === aria.KeyCode.ESC && aria.closeCurrentDialog()) {
+    if (key === 27 && aria.closeCurrentDialog()) {
       event.stopPropagation();
     }
   };
@@ -380,21 +381,52 @@ aria.Utils.isFocusable = function (element) {
 
 }());
 //-----------------------------------------------------------------------------
-function openMyDialog (dlgID) {
-  // source: https://stackoverflow.com/questions/10867077/jquery-dialog-popup
-  var id = '#' + dlgID;
-  $(id).dialog('open');
-  return (false);
+function editServerParams () {
+  if (openMyDialog('dlgServerSetup')) {
+    var dlg = document.getElementById('dlgServerSetup')
+    console.log(dlg.style);
+    var remoteData = loadLocalServerParams ();
+    document.getElementById('dlgServer').value = remoteData.server;
+    document.getElementById('dlgPort').value = remoteData.port;
+  }
 }
 //-----------------------------------------------------------------------------
-function closeMyDialog(dlgID, dlgType) {
+function dlgRemoteServerOK() {
+  var remoteData;
+  
+  remoteData = saveRemoteParams('dlgServer', 'dlgPort');
+  closeMyDialog('dlgServerSetup');
+  webSocketURL = composeWebSocketURL (remoteData.server, remoteData.port);// = "ws://localhost:4567";
+}
+//-----------------------------------------------------------------------------
+function composeWebSocketURL (server, port) {
+  var url = 'ws://' + server + ':' + port;
+  return (url);
+}
+//-----------------------------------------------------------------------------
+function openMyDialog (dlgID) {
+  // source: https://stackoverflow.com/questions/10867077/jquery-dialog-popup
+  var id = '#' + dlgID, fOpen;
+  try {
+    loadRemoteParams ();
+    $(id).dialog('open');
+    fOpen = true;
+  }
+  catch (err) {
+    console.log(err);
+    fOpen = false;
+  }
+  return (fOpen);
+}
+//-----------------------------------------------------------------------------
+function closeMyDialog(dlgID) {
   // source: https://stackoverflow.com/questions/10867077/jquery-dialog-popup
   var id = '#' + dlgID;
   $(id).dialog('close');
   return (false);
 }
 //-----------------------------------------------------------------------------
-function loadFromLocal () {
+function loadLocalServerParams () {
   var jsonRemoreParams;
 
   try {
@@ -428,12 +460,13 @@ function setRemoteDefaults() {
 }
 //-----------------------------------------------------------------------------
 function loadRemoteParams () {
-  var remoteData = loadFromLocal (), url;
+  var remoteData = loadLocalServerParams (), url;
 
   try {
-    document.getElementById('txtRemoteServer').value = remoteData.server;
-    document.getElementById('txtRemotePort').value = remoteData.port;
-    url = 'ws://' + remoteData.server + ':' + remoteData.port;
+    //document.getElementById('txtRemoteServer').value = remoteData.server;
+    //document.getElementById('txtRemotePort').value = remoteData.port;
+    url = composeWebSocketURL (remoteData.server, remoteData.port);
+
   }
   catch (err) {
     console.log(err);
@@ -442,13 +475,19 @@ function loadRemoteParams () {
   return (url);
 }
 //-----------------------------------------------------------------------------
-function saveRemoteParams (remoteServer, remotePort) {
-  var remoteServer, remotePort, remoteData;
-  var remoteData = loadFromLocal ();
+function saveRemoteParams (txtServer=null, txtPort=null) {
+  var /*remoteServer, remotePort, */remoteData;
+  var remoteData = loadLocalServerParams ();
 
+  if (txtServer == null)
+    txtServer = 'txtRemoteServer';
   try {
+    remoteData['server'] = document.getElementById(txtServer).value;
+    remoteData['port'] = document.getElementById(txtPort).value;
+    /*
     remoteServer = document.getElementById('txtRemoteServer').value;
     remotePort = document.getElementById('txtRemotePort').value;
+    */
   }
   catch (err) {
     remoteServer = 'localhost';
@@ -457,8 +496,7 @@ function saveRemoteParams (remoteServer, remotePort) {
   if (remoteData == null) {
     remoteData = {};
   }
-  remoteData.server = remoteServer;
-  remoteData.port = remotePort;
   localStorage.setItem(remoteParamsStorage, JSON.stringify(remoteData));
+  return (remoteData);
 }
 //-----------------------------------------------------------------------------

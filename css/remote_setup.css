@@ -4,9 +4,9 @@
 
 [role="alertdialog"],
 [role="dialog"] {
-  box-sizing: border-box;
+  /*box-sizing: border-box;
   padding: 15px;
-  border: 1px solid #000;
+  border: 1px solid #000;*/
   background-color: #fff;
   min-height: 100vh;
 }
@@ -18,9 +18,12 @@
     top: 2rem;
     left: 50vw;  /* move to the middle of the screen (assumes relative parent is the body/viewport) */
     transform: translateX(-50%);  /* move backwards 50% of this element's width */
-    min-width: calc(640px - (15px * 2));  /* == breakpoint - left+right margin */
+    /*min-width: calc(640px - (15px * 2));*/  /* == breakpoint - left+right margin */
+    width: 100px;  /* == breakpoint - left+right margin */
     min-height: auto;
-    box-shadow: 0 19px 38px rgba(0, 0, 0, 0.12), 0 15px 12px rgba(0, 0, 0, 0.22);
+    /*box-shadow: 0 19px 38px rgba(0, 0, 0, 0.12), 0 15px 12px rgba(0, 0, 0, 0.22);*/
+    background: white;
+    border: 1px solid gray;
   }
 }
 
@@ -160,4 +163,42 @@
 
 .toast.active {
   transform: translateY(0);
+}
+
+.dlgRemoteServer {
+  color: blue;
+  background-color: #fff;
+}
+
+.dlgRemoteServer  .dlgRemoteServer.tr  .dlgRemoteServer.th {
+  border: none;
+}
+
+.tblDlgPanel {
+  border: 0px;
+  width: 100%;
+  display: table;
+}
+.tblDlgPanel td
+{
+      border: none;
+      white-space: nowrap;
+      text-align: left;
+      color: black;
+      border: none;
+}
+.tblDlgPanelData
+{
+  background-color: rgb(216, 216, 216);
+  border: none;
+  text-align: center;
+}
+.tblDlgPanelTitle
+{
+  text-align: right;
+}
+.tblDlgPanelData:focus
+{
+  background-color: yellow;
+  border: none;
 }

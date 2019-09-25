@@ -109,12 +109,16 @@
 <body bgcolor="#ffffcc">
   <div id="top_panel" class="ui-layout-north">
         <div id="dlgServerSetup" title="Remote Server">
-        <table class="dlgRemoteServer" id="tblServerParams">
+          <table class="tblDlgPanel" id="tblTopPanel">
+            tblDlgPanel
           <tr>
-            <td>Server</td><td><input type="text" id="dlgServer" value="r9-nano"></tr>
+          </tr>
+              <td>Server</td>
+              <td><input type="text" id="dlgServer" size="50px" value="r9-nano" class="tblDlgPanelData"></td>
           </tr>
           <tr>
-            <td>Port</td><td><input type="text" id="dlgPort" value="5678"></td>
+            <td class="tblDlgPanelData" id="titlePort">Port</td>
+            <td><input type="text" id="dlgPort" value="5678" class="tblDlgPanelData"></td>
           </tr>
         </table>
         <br>
@@ -174,7 +178,7 @@
       });
 
     });
-   var author = document.querySelector("meta[name='author']").getAttribute("content");
+    var author = document.querySelector("meta[name='author']").getAttribute("content");
     var footer_html = "Last modified " + document.lastModified + " by website owner: NCNR (attn: " + author + ")";
     footer_html += '<br> Please cite as ';
     footer_html += '<a href="https://doi.org/10.6028/jres.122.034">https://doi.org/10.6028/jres.122.034</a>';

@@ -13,6 +13,7 @@ var data_file_content = null;  // debug note
 var webSocket = null;
 var webSocketURL;// = "ws://localhost:4567";
 var timerRemoteStatus = null;
+var timerRemoteResults = null;
 
 function upload_multiprocessing() {
   var mp='', cbox = document.getElementById('cboxRemoteFit');
@@ -1048,15 +1049,13 @@ var app_init = function(opts) {
         if (webSocket.readyState == webSocket.CLOSED) {
           openWSConnection(webSocketURL, JSON.stringify(remote_message));
         }
+        else {
+          setTimeout (onRemoteTable, 250);
+        }
       }
       catch (err) {
         console.log(err);
       }
-  }
-
-  function onGetLocalID () {
-      var message = composeGetLocalIDMessage();
-      openWSConnection(webSocketURL, JSON.stringify(message));
   }
 
   var fReadRemoteStatusBusy = false;
@@ -1067,7 +1066,9 @@ var app_init = function(opts) {
         if (message) {
           fReadRemoteStatusBusy = true;
           try {
-            openWSConnection(webSocketURL, JSON.stringify(message));
+            if (webSocket.readyState == webSocket.CLOSED) {
+              openWSConnection(webSocketURL, JSON.stringify(message));
+            }
           }
           catch (err) {
             console.log(err);
@@ -1550,7 +1551,6 @@ function get_JSON() {
     document.getElementById("btnRemoteFit").onclick = send_script;
     document.getElementById("btnRemoteStatus").onclick = onRemoteStatus;
     document.getElementById("btnRemoteTbl").onclick = onRemoteTable;
-    document.getElementById("btnGetLocalID").onclick = onGetLocalID;
 
     function get_table_data () {
       var table_data = d3.selectAll("#sld_table table tr").data().slice(1);
