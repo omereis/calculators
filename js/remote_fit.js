@@ -500,3 +500,23 @@ function saveRemoteParams (txtServer=null, txtPort=null) {
   return (remoteData);
 }
 //-----------------------------------------------------------------------------
+var strRemoteJobsDialogName = 'dlgRemoteJobs';
+function editRemoteJobs () {
+  //var dlg = $('#dialog-form');
+  var dlg = $('#'+ strRemoteJobsDialogName);
+  dlg.removeClass('ui-dialog-content');
+  dlg.removeClass('ui-widget-content');
+  dlg.dialog('open');
+}
+//-----------------------------------------------------------------------------
+$( function() {
+  //var dialog = $( "#dialog-form" ).dialog({
+    $('#'+ strRemoteJobsDialogName).dialog({
+      autoOpen: false,
+      height: 400,
+      width: 350,
+      modal: true
+    });
+  });
+/*
+*/

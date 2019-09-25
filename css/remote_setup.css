@@ -202,3 +202,44 @@
   background-color: yellow;
   border: none;
 }
+
+.tableRemoteFit {
+  width: 100%;
+  border:2px blue dashed;
+  table-layout: fixed;
+  color: black;
+  font-family: 'Times New Roman', Times, serif;
+}
+.tableRemoteFit td{
+  /*width: auto;*/
+  border:1px rgb(65, 222, 228) solid;
+}
+.tableRemoteFit th{
+  background: rgb(146, 219, 219);
+  min-width: 80px;
+}
+.btnSetup {
+  background: rgb(226, 226, 226) !important;
+  -webkit-appearance: button;
+  -webkit-writing-mode: horizontal-tb !important;
+  text-rendering: auto;
+  color: buttontext;
+  letter-spacing: normal;
+  word-spacing: normal;
+  text-transform: none;
+  text-indent: 0px;
+  text-shadow: none;
+  display: inline-block;
+  text-align: center;
+  align-items: flex-start;
+  cursor: default;
+  background-color: buttonface;
+  box-sizing: border-box;
+  margin: 0em;
+  font: 400 13.3333px Arial;
+  padding: 1px 6px;
+  border-width: 2px;
+  border-style: outset;
+  border-color: buttonface;
+  border-image: initial;
+}
