@@ -506,6 +506,7 @@ function editRemoteJobs () {
   var dlg = $('#'+ strRemoteJobsDialogName);
   dlg.removeClass('ui-dialog-content');
   dlg.removeClass('ui-widget-content');
+  dlg.removeClass('table');
   dlg.dialog('open');
 }
 //-----------------------------------------------------------------------------

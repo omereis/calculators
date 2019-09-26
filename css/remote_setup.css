@@ -218,6 +218,22 @@
   background: rgb(146, 219, 219);
   min-width: 80px;
 }
+
+.tableRemoteFitCommand {
+  width: 100%;
+  border:none;/*2px rgb(34, 156, 187) dashed;*/
+  color: black;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.tableRemoteFitCommand td{
+  min-width: 80px;
+  background: yellow;
+  border: none;
+  padding: 1px 5px 1px 5px;
+  text-align: center;
+}
+
 .btnSetup {
   background: rgb(226, 226, 226) !important;
   -webkit-appearance: button;
