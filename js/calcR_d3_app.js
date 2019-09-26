@@ -14,6 +14,8 @@ var webSocket = null;
 var webSocketURL;// = "ws://localhost:4567";
 var timerRemoteStatus = null;
 var timerRemoteResults = null;
+var timeoutCommTest = null;
+var fCommTestOK = false;
 
 function upload_multiprocessing() {
   var mp='', cbox = document.getElementById('cboxRemoteFit');
@@ -52,6 +54,15 @@ function composeRefl1dFitResults(remoteID) {
   message['command'] = ServerCommands.GET_REFL1D_RESULTS;
   message['params'] = remoteID;//.toString();
   message['fitter'] = 'refl1d';
+  return (message);
+}
+//-----------------------------------------------------------------------------
+function composeCommTest() {
+  var message = getMessageStart();
+
+  message['command'] = ServerCommands.COMM_TEST;
+  message['params'] = 'communication text';//.toString();
+  message['fitter'] = '';
   return (message);
 }
 //-----------------------------------------------------------------------------
@@ -1056,7 +1067,12 @@ var app_init = function(opts) {
       catch (err) {
         console.log(err);
       }
-  }
+    }
+
+    function composeWebSocketURL (server, port) {
+      var url = 'ws://' + server + ':' + port;
+      return (url);
+    }
 
   var fReadRemoteStatusBusy = false;
 
@@ -1079,14 +1095,6 @@ var app_init = function(opts) {
         }
       }
       console.log('reading status');
-/*
-      readCounter++;
-      if (readCounter > 10) {
-        clearInterval (timerRemoteStatus);
-        timerRemoteStatus = null;
-        readCounter = 0;
-      }
-*/
     }
 
     function export_script(export_dest) {
@@ -1162,16 +1170,7 @@ var app_init = function(opts) {
       param_values['fit_dest'] = String(f_stop);
     }
 
-/*
-output file format
-array of layers.
-each layer a dictionary with the following keys:
-  value:    real/Inf/-Inf
-  min:      real/Inf/-Inf
-  max:      real/Inf/-Inf
-  fit_dest: true/false
-*/
-function get_JSON() {
+  function get_JSON() {
       var json_table, table_data = get_table_data();
       var json_table, layer_key, json_layer, layer_keys, layer_values, table_layer;
       var to_fit = get_to_fit();
@@ -1199,20 +1198,6 @@ function get_JSON() {
       }
       return (json_table);
   }
-
-/*
-  function get_json_data_name (script_filename) {
-    var arr_json_data_name = [];
-    var json_file_data= {};
-
-    json_file_data['name'] = script_filename.replace('py','json');
-    json_file_data['data'] = get_JSON();
-    //arr_json_data_name[0] = get_JSON();
-    //arr_json_data_name[1] = script_filename.replace('py','json');
-    //return (arr_json_data_name);
-    return (json_file_data);
-  }
-*/
 
   function add_json_file (zip, script_filename) {
     var json_file_name, json_data;
@@ -1283,6 +1268,7 @@ function get_JSON() {
       console.log("openWSConnection::Connecting to: " + webSocketURL);
       try {
       webSocket = new WebSocket(webSocketURL);
+      webSocket.message = msgData;
       webSocket.addEventListener('error', (event) => {
         console.log('in addEventListener');
         console.log(event);
@@ -1297,12 +1283,16 @@ function get_JSON() {
       webSocket.onerror = function (errorEvent) {
         var msg = "WebSocket ERROR: " + JSON.stringify(errorEvent, null, 4);
         console.log("WebSocket ERROR: " + JSON.stringify(errorEvent, null, 4));
+        if (JSON.parse(webSocket.message).command == ServerCommands.COMM_TEST) {
+          var spn = document.getElementById('spanTestCommResult');
+          spn.style.color = 'red';
+          spn.innerText = msg;
+  
+        }
         console.log(msg);
       };
       webSocket.onmessage = function (messageEvent) {
         HandleWSReply (messageEvent.data);
-        //var wsMsg = messageEvent.data;
-        //display_remote_id(wsMsg)
         console.log("WebSocket MESSAGE: " + messageEvent.data);
         webSocket.close();
       };
@@ -1326,10 +1316,36 @@ function get_JSON() {
       else if (wjMsg.command == ServerCommands.GET_REFL1D_RESULTS) {
         HandleRefl1dRessults(wjMsg);
       }
+      else if (wjMsg.command == ServerCommands.COMM_TEST) {
+          HandleCommTest(wjMsg);
+          fCommTestOK = false;
+          timeoutCommTest = setTimeout (commTestFail, 2000);
+        }
     }
     catch (err) {
       console.log(err);
       alert (wsMsg);
+    }
+  }
+
+  function HandleCommTest(wjMsg) {
+    var spn = document.getElementById('spanTestCommResult');
+    spn.style.color = 'green';
+    spn.innerText = 'Test Passed';
+    fCommTestOK = true;
+    if (timeoutCommTest != null) {
+      clearTimeout (timeoutCommTest);
+      timeoutCommTest = null;
+    }
+  }
+
+  function commTestFail(wjMsg) {
+    if (!fCommTestOK) {
+      var spn = document.getElementById('spanTestCommResult');
+      if (spn.innerText.toLowerCase() != 'test passed') {
+        spn.style.color = 'red';
+        spn.innerText = 'Test Failed: no reply in 2 seconds :-(';
+      }
     }
   }
 
@@ -1551,6 +1567,40 @@ function get_JSON() {
     document.getElementById("btnRemoteFit").onclick = send_script;
     document.getElementById("btnRemoteStatus").onclick = onRemoteStatus;
     document.getElementById("btnRemoteTbl").onclick = onRemoteTable;
+    document.getElementById("btnTestServer").onclick = onTestComm;
+
+    function onTestComm () {
+      var remote_message = composeCommTest();
+      var fReady, urlOld, remoteData = saveRemoteParams('dlgServer', 'dlgPort');
+
+      try {
+        if (webSocketURL != null) {
+          fReady = (webSocketURL.readyState == webSocketURL.CLOSED);
+        }
+        else {
+          fReady = false;
+        }
+        //if (webSocket.readyState == webSocket.CLOSED) {
+        if (fReady) {
+          var spn = document.getElementById('spanTestCommResult');
+          spn.innerText = "Waiting...";
+          spn.style.color = 'black';
+          urlOld = webSocketURL;
+          webSocketURL = composeWebSocketURL (remoteData.server, remoteData.port);
+          openWSConnection(webSocketURL, JSON.stringify(remote_message));
+        }
+        else {
+          setTimeout (onTestComm, 250);
+        }
+      }
+      catch (err) {
+        console.log(err);
+        alert (err);
+      }
+      finally {
+        webSocketURL = urlOld;
+      }
+    }
 
     function get_table_data () {
       var table_data = d3.selectAll("#sld_table table tr").data().slice(1);
@@ -1752,3 +1802,4 @@ function get_JSON() {
       });
     });
 }
+

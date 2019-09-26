@@ -109,11 +109,9 @@
   <div id="top_panel" class="ui-layout-north">
 
       <div id="dlgRemoteJobs" title="Remote Fit Jobs">
-
           <input type="button" class="cls" value="Delete" id="btnRemoteDelete"></input>
           <input type="button" class="cls" value="Reload" id="btnRemoteReload"></input>
           <hr>
-
         <table class="tableRemoteFitCommand">
           <tr>
             <td>Tags</td>
@@ -141,27 +139,40 @@
             <td>17 </td>
           </tr>
         </table>
-    </div>
+        <hr>
+        <span align="center">
+          <button onclick="dlgRemoteServerOK()">OK</button>
+          <button onclick="closeMyDialog('dlgServerSetup', 'Cancel')">Cancel</button>
+        </span>
+        <hr>
+      </div>
          
-        
-    <div id="dlgServerSetup" class="dlgServerSetup" title="Remote Server">
-          <table class="tblDlgPanel" id="tblTopPanel">
-            tblDlgPanel
+    <div id="dialogRemoteSetup" title="Remote Server Setup">
+      <hr>
+      Setup Dialog
+      <table class="tblDlgPanel" id="tblTopPanel">
           <tr>
           </tr>
               <td>Server</td>
               <td><input type="text" id="dlgServer" size="50px" value="r9-nano" class="tblDlgPanelData"></td>
           </tr>
           <tr>
-            <td class="tblDlgPanelData" id="titlePort">Port</td>
+            <td>Port</td>
             <td><input type="text" id="dlgPort" size="50px" value="5678" class="tblDlgPanelData"></td>
           </tr>
         </table>
-        <br>
+      <hr>
+      <button id="btnTestServer">Test Server...</button>&nbsp;&nbsp;
+      <span id="spanTestCommResult" style="color:black;background-color: rgb(192, 192, 192);padding: 4px;">Waiting...</span>
+      <hr>
+      <span align="center">
         <button onclick="dlgRemoteServerOK()">OK</button>
-        <button onclick="closeMyDialog('dlgServerSetup', 'Cancel')">Cancel</button>
-    </div>
-        <table id="tblTop" class="tblTopPanel">
+        <button onclick="closeMyDialog('dialogRemoteSetup', 'Cancel')">Cancel</button>
+      </span>
+      <hr>
+  </div>
+        
+  <table id="tblTop" class="tblTopPanel">
           <tr>
               <td style="text-align: left;">Data File (*.refl): <input type="file" multiple="false" id="datafile" name="datafile"></td>
               <td style="text-align: center;text-align: right;"><input type="button" class="btnSetup" value="Generate Refl1D Script..." id="scriptbutton"></td>
@@ -178,10 +189,10 @@
               <td ><input type="button" class="btnSetup" value="Remote Status" id="btnRemoteStatus"></td>
               <td ><span id="spanRemoteStatus">Remote status</span></td>
               <td ><input class="btnSetup" type="button" value="Load Remote Table" id="btnRemoteTbl"></td>
-              <td><button class="btnSetup" onclick="editServerParams()">Remote Server...</button></td>
+              <td><button class="btnSetup" onclick="editServerParams ()">Remote Server...</button></td>
               <td><button class="btnSetup" onclick="editRemoteJobs()">Remote Jobs...</button></td>
               <!--<td><button id="create-user">Create new user</button></td>-->
-              <td><button id="create-user" class="btnSetup">Create new user</button></td>
+              <td><button id="btnSetup" onclick="editDialog('dialogRemoteSetup')" class="btnSetup">Create new user</button></td>
             </tr>
           </table>
         
@@ -210,14 +221,9 @@
     $(function() {
   // dialog initializes
   // source: https://stackoverflow.com/questions/10867077/jquery-dialog-popup
-      //$("#dlgContact").dialog({
       $("#dlgServerSetup").dialog({
         autoOpen : false, modal : true, show : "blind", hide : "blind"
       });
-      $("#dlgServerJobs").dialog({
-        autoOpen : false, modal : true, show : "blind", hide : "blind"
-      });
-
     });
     var author = document.querySelector("meta[name='author']").getAttribute("content");
     var footer_html = "Last modified " + document.lastModified + " by website owner: NCNR (attn: " + author + ")";

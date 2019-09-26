@@ -380,6 +380,7 @@ aria.Utils.isFocusable = function (element) {
   }; // end replaceDialog
 
 }());
+/*
 //-----------------------------------------------------------------------------
 function editServerParams () {
   if (openMyDialog('dlgServerSetup')) {
@@ -390,12 +391,14 @@ function editServerParams () {
     document.getElementById('dlgPort').value = remoteData.port;
   }
 }
+*/
 //-----------------------------------------------------------------------------
 function dlgRemoteServerOK() {
   var remoteData;
   
   remoteData = saveRemoteParams('dlgServer', 'dlgPort');
-  closeMyDialog('dlgServerSetup');
+  //closeMyDialog('dlgServerSetup');
+  closeMyDialog('dialogRemoteSetup');
   webSocketURL = composeWebSocketURL (remoteData.server, remoteData.port);// = "ws://localhost:4567";
 }
 //-----------------------------------------------------------------------------
@@ -463,8 +466,6 @@ function loadRemoteParams () {
   var remoteData = loadLocalServerParams (), url;
 
   try {
-    //document.getElementById('txtRemoteServer').value = remoteData.server;
-    //document.getElementById('txtRemotePort').value = remoteData.port;
     url = composeWebSocketURL (remoteData.server, remoteData.port);
 
   }
@@ -476,7 +477,6 @@ function loadRemoteParams () {
 }
 //-----------------------------------------------------------------------------
 function saveRemoteParams (txtServer=null, txtPort=null) {
-  var /*remoteServer, remotePort, */remoteData;
   var remoteData = loadLocalServerParams ();
 
   if (txtServer == null)
@@ -484,10 +484,6 @@ function saveRemoteParams (txtServer=null, txtPort=null) {
   try {
     remoteData['server'] = document.getElementById(txtServer).value;
     remoteData['port'] = document.getElementById(txtPort).value;
-    /*
-    remoteServer = document.getElementById('txtRemoteServer').value;
-    remotePort = document.getElementById('txtRemotePort').value;
-    */
   }
   catch (err) {
     remoteServer = 'localhost';
@@ -501,8 +497,9 @@ function saveRemoteParams (txtServer=null, txtPort=null) {
 }
 //-----------------------------------------------------------------------------
 var strRemoteJobsDialogName = 'dlgRemoteJobs';
+var strDialogRemoteSetup = 'dialogRemoteSetup';
+//-----------------------------------------------------------------------------
 function editRemoteJobs () {
-  //var dlg = $('#dialog-form');
   var dlg = $('#'+ strRemoteJobsDialogName);
   dlg.removeClass('ui-dialog-content');
   dlg.removeClass('ui-widget-content');
@@ -510,14 +507,49 @@ function editRemoteJobs () {
   dlg.dialog('open');
 }
 //-----------------------------------------------------------------------------
+function editServerParams () {
+  var remoteData = loadLocalServerParams ();
+  try {
+    var spn = document.getElementById('spanTestCommResult');
+    spn.style.color = 'black';
+    spn.innerText = 'Waiting...';
+  }
+  catch (err) {
+    console.log(err);
+  }
+  document.getElementById('dlgServer').value = remoteData.server;
+  document.getElementById('dlgPort').value = remoteData.port;
+  startDialog (strDialogRemoteSetup);
+}
+
+//-----------------------------------------------------------------------------
+function editDialog (dialogID) {
+  console.log(dialogID);
+  startDialog (dialogID);
+}
+//-----------------------------------------------------------------------------
+function startDialog (dialogID) { // openDialog taken :-(
+  var dlg = $('#'+ dialogID);
+
+  dlg.removeClass('ui-dialog-content');
+  dlg.removeClass('ui-widget-content');
+  dlg.removeClass('table');
+  dlg.dialog('open');
+}
+//-----------------------------------------------------------------------------
 $( function() {
-  //var dialog = $( "#dialog-form" ).dialog({
     $('#'+ strRemoteJobsDialogName).dialog({
       autoOpen: false,
       height: 400,
       width: 350,
       modal: true
     });
+    $('#'+ strDialogRemoteSetup).dialog({
+      autoOpen: false,
+      height: 250,
+      width: 50,
+      modal: true
+    });
   });
-/*
-*/
+//-----------------------------------------------------------------------------
+
