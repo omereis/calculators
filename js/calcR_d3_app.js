@@ -1034,12 +1034,30 @@ var app_init = function(opts) {
         alert('Please load data file');
       }
       else {
+        save_tag_to_local ();
         setRemoteID ('');
         export_script('websocket');
         save_tag_to_local(uploadTag());
         timerRemoteStatus = setInterval (readRemoteStatus, 500);
       }
     }
+
+  function save_tag_to_local () {
+    var currentTag = uploadTag();
+    var savedTags, strTags = localStorage.getItem('refl1d_sent_tags');
+
+    if (strTags != null) {
+      savedTags = strTags.split(',');
+    }
+    else {
+      savedTags = [];
+    }
+    if (savedTags.indexOf(currentTag) < 0) {
+      savedTags.push(currentTag);
+      localStorage.setItem('refl1d_sent_tags', savedTags.toString());
+    }
+    console.log(savedTags);
+  }
 
     function onRemoteStatus() {
       stopStatusTimer();
