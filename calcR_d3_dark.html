@@ -112,17 +112,72 @@
           <input type="button" class="cls" value="Delete" id="btnRemoteDelete"></input>
           <input type="button" class="cls" value="Reload" id="btnRemoteReload"></input>
           <hr>
-        <table class="tableRemoteFitCommand">
+        <table>
           <tr>
-            <td>Tags</td>
-            <td>Jobs</td>
+            <td>Used Tags Here</td>
+            <td>Jobs Table</td>
           </tr>
         </table>
-        <table width="100%" class="tableRemoteFit">
+        <table class="tableRemoteFitCommand">
+            <tr>
+              <td>Tags</td>
+              <td>
+                <table width="100%" class="tableRemoteFit" id="tblRemoteJobs">
+                  <tr>
+                    <th id="th_id"><input type="checkbox" id="cboxAllJobs">Remote ID</th>
+                    <th>Tag</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Status</th>
+                    <th style="min-width: 120px;">&#x03C7<sup>2</sup></th>
+                  </tr>
+                  <tr>
+                    <td>345</td>
+                    <td>Chi</td>
+                    <td>Sep 25, 2019</td>
+                    <td>2:35 pm</td>
+                    <td>Completed</td>
+                    <td>17 </td>
+                  </tr>
+                  <tr>
+                      <td>345</td>
+                      <td>Chi</td>
+                      <td>Sep 25, 2019</td>
+                      <td>2:35 pm</td>
+                      <td>Completed</td>
+                      <td>17 </td>
+                    </tr>
+                  <tr>
+                    <td>345</td>
+                    <td>Chi</td>
+                    <td>Sep 25, 2019</td>
+                    <td>2:35 pm</td>
+                    <td>Completed</td>
+                    <td>17 </td>
+                  </tr>
+                  <tr>
+                      <td>345</td>
+                      <td>Chi</td>
+                      <td>Sep 25, 2019</td>
+                      <td>2:35 pm</td>
+                      <td>Completed</td>
+                      <td>17 </td>
+                    </tr>
+                    <tr>
+                        <td>345</td>
+                        <td>Chi</td>
+                        <td>Sep 25, 2019</td>
+                        <td>2:35 pm</td>
+                        <td>Completed</td>
+                        <td>17 </td>
+                      </tr>
+                        </table>
+              </td>
+          </tr>
+        </table>
+        <table width="100%" class="tableRemoteFit" id="tblRemoteJobs">
           <tr>
-            <th><input type="cboxAllJobs">Local ID</th>
-            <th>Local ID</th>
-            <th>Remote ID</th>
+            <th id="th_id"><input type="checkbox" id="cboxAllJobs">Remote ID</th>
             <th>Tag</th>
             <th>Date</th>
             <th>Time</th>
@@ -130,7 +185,6 @@
             <th style="min-width: 120px;">&#x03C7<sup>2</sup></th>
           </tr>
           <tr>
-            <td><input type="checkbox">345</td>
             <td>345</td>
             <td>Chi</td>
             <td>Sep 25, 2019</td>
@@ -190,7 +244,8 @@
               <td ><span id="spanRemoteStatus">Remote status</span></td>
               <td ><input class="btnSetup" type="button" value="Load Remote Table" id="btnRemoteTbl"></td>
               <td><button class="btnSetup" onclick="editServerParams ()">Remote Server...</button></td>
-              <td><button class="btnSetup" onclick="editRemoteJobs()">Remote Jobs...</button></td>
+              <!--<td><button class="btnSetup" onclick="editRemoteJobs()">Remote Jobs...</button></td>-->
+              <td><button class="btnSetup" id="btnRemoteJobs">Remote Jobs...</button></td>
             </tr>
           </table>
         
