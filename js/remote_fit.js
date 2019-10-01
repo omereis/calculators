@@ -574,4 +574,13 @@ function popupClosed () {
   popupJobMgr = null;
 }
 //-----------------------------------------------------------------------------
+function message_to_json(wsMsg) {
+  var p = wsMsg.indexOf("'");
+  while (p >= 0) {
+    wsMsg = wsMsg.replace("'", '"');
+    p = wsMsg.indexOf("'");
+  }
+  return (wsMsg);
+}
+//-----------------------------------------------------------------------------
 

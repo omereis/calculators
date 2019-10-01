@@ -1289,6 +1289,7 @@ var app_init = function(opts) {
       }
     }
 
+/*
     function message_to_json(wsMsg) {
       var p = wsMsg.indexOf("'");
       while (p >= 0) {
@@ -1297,6 +1298,7 @@ var app_init = function(opts) {
       }
       return (wsMsg);
     }
+*/
 
     /**
  * Open a new WebSocket connection using the given parameters
@@ -1330,7 +1332,7 @@ var app_init = function(opts) {
         console.log(msg);
       };
       webSocket.onmessage = function (messageEvent) {
-        HandleWSReply (messageEvent.data);
+        handleWSReply (messageEvent.data);
         console.log("WebSocket MESSAGE: " + messageEvent.data);
         webSocket.close();
       };
@@ -1339,7 +1341,7 @@ var app_init = function(opts) {
     }
   }
 
-  function HandleWSReply (wsMsg) {
+  function handleWSReply (wsMsg) {
     try {
       //var txt = message_to_json(wsMsg);
       //var j = JSON.parse(txt);

@@ -12,8 +12,11 @@ body{
 .tableRemoteJobs {
     width:100%;
     border: 1px solid black;
+    vertical-align: top;
 }
-
+.tableRemoteJobs.check {
+    width:10%;
+}
 .tblTags {
     border: 1px solid black;
     min-width: 200;
@@ -26,7 +29,7 @@ body{
 }
 
 .tblTags tr {
-    text-align: center;
+    text-align: left;
 }
 
 .tblTags td {
