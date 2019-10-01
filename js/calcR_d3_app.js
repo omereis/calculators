@@ -77,6 +77,26 @@ function composeRefl1dStatusMessage() {
   return (message);
 }
 //-----------------------------------------------------------------------------
+function composeRefl1dStatusMessage() {
+  var message = null, id = uploadRemoteID();
+  if (Number(id) > 0) {
+    message = getMessageStart();
+    message['command'] = ServerCommands.GET_STATUS;
+    message['params'] = id;
+    message['fitter'] = 'refl1d';
+  }
+  return (message);
+}
+//-----------------------------------------------------------------------------
+function composeTagsJobsMessage(strTags) {
+  var message = getMessageStart();
+
+  message['command'] = ServerCommands.GET_TAGS_JOBS;
+  message['params'] = strTags;
+  message['fitter'] = 'refl1d';
+  return (message);
+}
+//-----------------------------------------------------------------------------
 function uploadRemoteID() {
   var id;
   //var s = document.getElementById('spanRemoteID');
@@ -1044,7 +1064,7 @@ var app_init = function(opts) {
 
   function save_tag_to_local () {
     var currentTag = uploadTag();
-    var savedTags, strTags = localStorage.getItem('refl1d_sent_tags');
+    var savedTags, strTags = localStorage.getItem(get_refl1d_tag_name());
 
     if (strTags != null) {
       savedTags = strTags.split(',');
@@ -1054,7 +1074,7 @@ var app_init = function(opts) {
     }
     if (savedTags.indexOf(currentTag) < 0) {
       savedTags.push(currentTag);
-      localStorage.setItem('refl1d_sent_tags', savedTags.toString());
+      localStorage.setItem(get_refl1d_tag_name(), savedTags.toString());
     }
     console.log(savedTags);
   }
@@ -1587,6 +1607,52 @@ var app_init = function(opts) {
     document.getElementById("btnRemoteTbl").onclick = onRemoteTable;
     document.getElementById("btnTestServer").onclick = onTestComm;
 
+    function onRemoteJobs () {
+      var dlg = $('#'+ strRemoteJobsDialogName);
+      dlg.removeClass('ui-dialog-content');
+      dlg.removeClass('ui-widget-content');
+      dlg.removeClass('table');
+      loadRemoteJobs();
+      dlg.dialog('open');
+    }
+
+    function loadLocalTags() {
+      var strTags = localStorage.getItem(get_refl1d_tag_name());
+      if (strTags == null) {
+        strTags = '';
+      }
+      return (strTags);
+    }
+
+    function loadRemoteJobs() {
+      var strTags = loadLocalTags();
+
+      if (strTags.length > 0) {
+        deleteJobsRows ();
+        var message = composeTagsJobsMessage(strTags);
+        openWSConnection(webSocketURL, JSON.stringify(message));
+      }
+      else {
+        alert('No tags found');
+      }
+    }
+
+    function deleteJobsRows () {
+      var tbl = document.getElementById('tblRemoteJobs')
+      var n, nRows = tbl.rows.length;
+
+      for (var n=0 ; n < 20 ; n++) {
+        var r = tbl.insertRow(nRows + n);
+        for (var i=0 ; i < 5 ; i++) {
+          var c = r.insertCell(i);
+          c.innerText = 'c #' + (n+1).toString();
+        }
+      }
+/*      for (n=nRows-1 ; n > 0 ; n--) {
+        tbl.deleteRow(n);
+      }*/
+    }
+
     function onTestComm () {
       var remote_message = composeCommTest();
       var fReady, urlOld, remoteData = saveRemoteParams('dlgServer', 'dlgPort');
@@ -1821,3 +1887,6 @@ var app_init = function(opts) {
     });
 }
 
+function get_refl1d_tag_name() {
+  return ('refl1d_sent_tags');
+}

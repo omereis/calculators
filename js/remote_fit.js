@@ -9,6 +9,7 @@ var remoteParamsStorage='bumpsRemoteServer';
 var remoteServer;
 var remotePort;
 var urlWebSocket = null;
+var popupJobMgr = null;
 
 aria.Utils = aria.Utils || {};
 
@@ -507,8 +508,13 @@ function editRemoteJobs () {
   dlg.dialog('open');
 }
 //-----------------------------------------------------------------------------
+//loadRemoteJobs();
+//function loadRemoteJobs() {
+//  var strTags = localStorage.getItem('refl1d_sent_tags');
+//}
+//-----------------------------------------------------------------------------
 function editServerParams () {
-  var remoteData = loadLocalServerParams ();
+  var remoteData = loadLocalServerParams (get_refl1d_tag_name());
   try {
     var spn = document.getElementById('spanTestCommResult');
     spn.style.color = 'black';
@@ -551,5 +557,21 @@ $( function() {
       modal: true
     });
   });
+//-----------------------------------------------------------------------------
+// source: https://www.quackit.com/html/codes/html_popup_window_code.cfm
+function newPopup() {
+  if (popupJobMgr == null) {
+    popupJobMgr = window.open(
+        './remote_jobs.html','popUpWindow','height=500,width=800,left=10,top=10,resizable=yes,scrollbars=yes,toolbar=yes,menubar=no,location=no,directories=no,status=yes')
+        popupJobMgr.onbeforeunload = popupClosed;
+  }
+  else {
+    popupJobMgr.focus();
+  }
+}
+//-----------------------------------------------------------------------------
+function popupClosed () {
+  popupJobMgr = null;
+}
 //-----------------------------------------------------------------------------
 

@@ -1,0 +1,36 @@
+body{
+    background-color: rgb(85, 182, 238);
+    color:black;
+    border-color:black;
+}
+
+.tblWholePage {
+    width: 100%;
+    vertical-align: top;
+}
+
+.tableRemoteJobs {
+    width:100%;
+    border: 1px solid black;
+}
+
+.tblTags {
+    border: 1px solid black;
+    min-width: 200;
+}
+
+.tblTags th {
+    background-color: rgb(1, 157, 247);
+    color: white;
+    min-width: 50px;
+}
+
+.tblTags tr {
+    text-align: center;
+}
+
+.tblTags td {
+    background-color: aqua;
+    color: black;
+    min-width: 50px;
+}

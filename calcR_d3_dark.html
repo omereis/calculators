@@ -107,18 +107,12 @@
     </div>
 
   <div id="top_panel" class="ui-layout-north">
-
       <div id="dlgRemoteJobs" title="Remote Fit Jobs">
           <input type="button" class="cls" value="Delete" id="btnRemoteDelete"></input>
           <input type="button" class="cls" value="Reload" id="btnRemoteReload"></input>
           <hr>
-        <table>
-          <tr>
-            <td>Used Tags Here</td>
-            <td>Jobs Table</td>
-          </tr>
-        </table>
-        <table class="tableRemoteFitCommand">
+          
+          <table class="tableRemoteFitCommand">
             <tr>
               <td>Tags</td>
               <td>
@@ -140,7 +134,7 @@
                     <td>17 </td>
                   </tr>
                   <tr>
-                      <td>345</td>
+                      <td>346</td>
                       <td>Chi</td>
                       <td>Sep 25, 2019</td>
                       <td>2:35 pm</td>
@@ -148,7 +142,7 @@
                       <td>17 </td>
                     </tr>
                   <tr>
-                    <td>345</td>
+                    <td>347</td>
                     <td>Chi</td>
                     <td>Sep 25, 2019</td>
                     <td>2:35 pm</td>
@@ -156,7 +150,7 @@
                     <td>17 </td>
                   </tr>
                   <tr>
-                      <td>345</td>
+                      <td>348</td>
                       <td>Chi</td>
                       <td>Sep 25, 2019</td>
                       <td>2:35 pm</td>
@@ -164,17 +158,19 @@
                       <td>17 </td>
                     </tr>
                     <tr>
-                        <td>345</td>
+                        <td>349</td>
                         <td>Chi</td>
                         <td>Sep 25, 2019</td>
                         <td>2:35 pm</td>
                         <td>Completed</td>
                         <td>17 </td>
-                      </tr>
-                        </table>
+                    </tr>
+                  </table>
               </td>
           </tr>
         </table>
+
+<!--
         <table width="100%" class="tableRemoteFit" id="tblRemoteJobs">
           <tr>
             <th id="th_id"><input type="checkbox" id="cboxAllJobs">Remote ID</th>
@@ -193,6 +189,7 @@
             <td>17 </td>
           </tr>
         </table>
+-->
         <hr>
         <span align="center">
           <button onclick="dlgRemoteServerOK()">OK</button>
@@ -225,7 +222,7 @@
       </span>
       <hr>
   </div>
-        
+
   <table id="tblTop" class="tblTopPanel">
           <tr>
               <td style="text-align: left;">Data File (*.refl): <input type="file" multiple="false" id="datafile" name="datafile"></td>
@@ -244,8 +241,7 @@
               <td ><span id="spanRemoteStatus">Remote status</span></td>
               <td ><input class="btnSetup" type="button" value="Load Remote Table" id="btnRemoteTbl"></td>
               <td><button class="btnSetup" onclick="editServerParams ()">Remote Server...</button></td>
-              <!--<td><button class="btnSetup" onclick="editRemoteJobs()">Remote Jobs...</button></td>-->
-              <td><button class="btnSetup" id="btnRemoteJobs">Remote Jobs...</button></td>
+              <td><button class="btnSetup" id="btnRemoteJobs1" onclick="newPopup()">Remote Jobs...</button></td>
             </tr>
           </table>
         
@@ -271,6 +267,9 @@
     <div id="documentation_popup" ></div>
   <script>
     webSocketURL = loadRemoteParams();
+    window.CallParent = function() {
+      alert(" Parent window Alert");
+    }
     $(function() {
   // dialog initializes
   // source: https://stackoverflow.com/questions/10867077/jquery-dialog-popup

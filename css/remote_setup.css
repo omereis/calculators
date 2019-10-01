@@ -224,6 +224,7 @@
   border:none;/*2px rgb(34, 156, 187) dashed;*/
   color: black;
   font-family: Arial, Helvetica, sans-serif;
+  overflow-y:scroll;
 }
 
 .tableRemoteFitCommand td{
@@ -259,3 +260,4 @@
   border-color: buttonface;
   border-image: initial;
 }
+/*****************************************************/

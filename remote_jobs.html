@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Manage Fit Jobs on Remote Server</title>
+    <script src="/calculators/js/remote_jobs.js" charset="utf-8"></script>
+    <link rel="stylesheet" href="css/remote_jobs.css"/>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<!--
+        <script language="Javascript" type="text/javascript">
+        jQuery(document).ready(function(){  
+            opener.CallParent();
+        });
+    </script>
+-->
+</head>
+<body onload="app_init()">
+    <h2>Fit Jobs on Remote Server</h2>
+    <table class="tblWholePage">
+        <tr>
+            <th><u>Tags</u></th>
+            <th><u>Jobs</u></th>
+        </tr>
+        <tr>
+            <td style="border: 1px black solid;">
+                <table width="100%" class="tblTags">
+                    <tr>
+                        <td colspan="2" style="text-align: center;">Local Tags</td>
+                    </tr>
+                    <tr>
+                        <td><input type="button" value="Delete"></button></td>
+                        <td><input type="button" value="Count Jobs"></button></td>
+                    </tr>
+                        <tr>
+                        <th>Tag Name</td>
+                        <th># of Jobs</td>
+                    </tr>
+                </table>
+            </td>
+
+            <td>
+                <table width="100%" class="tableRemoteJobs" id="tblRemoteJobs">
+                    <tr>
+                        <th id="th_id"><input type="checkbox" id="cboxAllJobs">Remote ID</th>
+                            <th>Tag</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                            <th style="min-width: 120px;">&#x03C7<sup>2</sup></th>
+                        </tr>
+                        <tr>
+                            <td>345</td>
+                            <td>Chi</td>
+                            <td>Sep 25, 2019</td>
+                            <td>2:35 pm</td>
+                            <td>Completed</td>
+                            <td>17 </td>
+                        </tr>
+                    </td>
+                </table>
+    </table>
+</body>
+
+<!--
+                                <tr>
+                                <td colspan="2">
+                                    Local Tags
+                                </td>
+                            </tr>
+                            <tr>
+                                <th><input type="checkbox" id="cboxAllTags">Tag Name</input></th>
+                                <th>Jobs</th>
+                            </tr>
+
+-->
