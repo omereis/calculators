@@ -562,7 +562,7 @@ $( function() {
 function newPopup() {
   if (popupJobMgr == null) {
     popupJobMgr = window.open(
-        './remote_jobs.html','popUpWindow','height=500,width=800,left=10,top=10,resizable=yes,scrollbars=yes,toolbar=yes,menubar=no,location=no,directories=no,status=yes')
+        './remote_jobs.html','popUpWindow','height=500,width=1000,left=10,top=10,resizable=yes,scrollbars=yes,toolbar=yes,menubar=no,location=no,directories=no,status=yes')
         popupJobMgr.onbeforeunload = popupClosed;
   }
   else {

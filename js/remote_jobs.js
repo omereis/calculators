@@ -43,12 +43,33 @@ function tagsLocalToTable() {
     for (n=0 ; n < astr.length ; n++) {
         row = tbl.insertRow(tbl.rows.length);
         cell = row.insertCell(0);
-        cell.innerHTML = '<input type="checkbox" id="' + astr[n] + '">' + astr[n];
+        cell.innerHTML = '<input type="checkbox" id="' + astr[n] + '" onclick="onTagCheck(id)">' + astr[n];
         cell = row.insertCell(1);
         cell.style.textAlign="center";
         cell.innerText = '-';
        
     }
+}
+//-----------------------------------------------------------------------------
+function countCheckedTags() {
+    var tbl, n, nCount=0, jc, cbox;
+
+    tbl = document.getElementById('tblTags');
+    for (n=3 ; n < tbl.rows.length ; n++) {
+        jc = jQuery.parseHTML(tbl.rows[n].cells[0].innerHTML);
+        cbox = document.getElementById(jc[0].id);
+        if (cbox.checked){
+            nCount++;
+        }
+    }
+    return (nCount);
+}
+//-----------------------------------------------------------------------------
+function onTagCheck(id) {
+    var count = countCheckedTags();
+    var btn = document.getElementById('btnDelByTag');
+    btn.disabled = (count == 0 ? true : false);
+    console.log(count);
 }
 //-----------------------------------------------------------------------------
 function get_refl1d_tag_name() {
@@ -145,6 +166,5 @@ function updateTagsCount(params) {
         cellCount.innerText = params[n].count;
     }
 }
-
 //-----------------------------------------------------------------------------
 
