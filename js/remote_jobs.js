@@ -42,6 +42,16 @@ function composeDelJobsByCountMessage(astrChecked) {
     return (message);
 }
 //-----------------------------------------------------------------------------
+function composeLoadJobsByCountMessage(astrChecked) {
+    var message = getMessageStart();
+
+    message['command'] = ServerCommands.LOAD_BY_TAG;
+    message['fitter'] = 'refl1d';
+    message['multi_processing'] = '';
+    message['params'] = astrChecked.join(',');
+    return (message);
+}
+//-----------------------------------------------------------------------------
 function app_init() {
     tagsLocalToTable();
 }
@@ -59,6 +69,18 @@ function tagsLocalToTable() {
         cell.innerText = '-';
        
     }
+}
+//-----------------------------------------------------------------------------
+function onRefreshTagsClick() {
+    var n, tbl = document.getElementById('tblTags');
+    var astr = localStorage.getItem(get_refl1d_tag_name()).split(',');
+    
+    for (n=0 ; n < astr.length ; n++) {
+        var cbox = document.getElementById(astr[n]);
+        var rowElement = cbox.parentElement.parentElement;
+        tbl.deleteRow(rowElement.rowIndex);
+    }
+    tagsLocalToTable();
 }
 //-----------------------------------------------------------------------------
 function countCheckedTags() {
@@ -159,6 +181,9 @@ function handleWSReply (messageData) {
         else if (jsonMsg.command == ServerCommands.DEL_BY_TAG) {
             updateDeletedTags(jsonMsg.params);
         }
+        else if (jsonMsg.command == ServerCommands.LOAD_BY_TAG) {
+            updateRemoteJobsTable(jsonMsg.params);
+        }
         console.log(jsonMsg);
     }
     catch (err) {
@@ -235,4 +260,54 @@ function updateDeletedTags(astrDelTags) {
     localStorage.setItem(get_refl1d_tag_name(), astr);
 }
 //-----------------------------------------------------------------------------
+function onLoadByTagClick() {
+    var astrChecked = uploadCheckedTags();
+    var message = composeLoadJobsByCountMessage(astrChecked);
+    sendWSMessage (message);
+}
+//-----------------------------------------------------------------------------
+function composeJobElementID (remote_id) {
+    var jobElementID = 'remoet_job_' + remote_id.toString();
+    return (jobElementID);
+}
+//-----------------------------------------------------------------------------
+function updateRemoteJobsTable(arrayParams) {
+    var row, n, tbl = document.getElementById('tblRemoteJobs');
+    for (n=0 ; n < arrayParams.length ; n++) {
+        jsonParams = arrayParams[n];
+        id = composeJobElementID (jsonParams.job_id);
+        var btn = document.getElementById(id);
+        if (btn == null) {
+            row = tbl.insertRow(tbl.rows.length);
+        }
+        else {
+            row = btn.parentElement.parentElement;
+        }
+        jsonJobToRow (row, jsonParams);
+    }
+    row = tbl.insertRow(tbl.rows.length);
+    console.log(jsonParams);
+}
+//-----------------------------------------------------------------------------
+function jsonJobToRow (row, jsonParams) {
+    var cell;
 
+    for (var n=0 ; n < row.cells.length ; n++) {
+        row.deleteCell(0);
+    }
+    cell = row.insertCell (0);
+    cell.innerHTML = '<input type="button" id="' + composeJobElementID (jsonParams.job_id) + '" value="Load job ' + jsonParams.job_id + '">'
+
+    cell = row.insertCell (1);
+    cell.innerText = jsonParams.tag;
+
+    cell = row.insertCell (2);
+    cell.innerText = jsonParams.sent_date;
+
+    cell = row.insertCell (3);
+    cell.innerText = jsonParams.sent_time;
+
+    cell = row.insertCell (4);
+    cell.innerText = jsonParams.chi_square;
+}
+//-----------------------------------------------------------------------------

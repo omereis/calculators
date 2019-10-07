@@ -14,6 +14,19 @@ body{
     border: 1px solid black;
     vertical-align: top;
 }
+
+.tableRemoteJobs td {
+    /*background-color: rgb(0, 132, 255);*/
+    text-align: center;
+    border: 1px solid white;
+}
+
+.tableRemoteJobs th {
+    background-color: rgb(0, 132, 255);
+    text-align: center;
+    border: 1px solid white;
+}
+
 .tableRemoteJobs.check {
     width:10%;
 }

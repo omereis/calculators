@@ -9,7 +9,8 @@ const ServerCommands = {
     GET_LOCAL_ID : 'get_local_id',
     COMM_TEST   : 'communication_text',
     GET_TAGS_JOBS   : 'get_tags_jobs',
-    GET_TAG_COUNT : 'get_tag_count',
-    DEL_BY_TAG    : 'del_by_tag'
+    GET_TAG_COUNT   : 'get_tag_count',
+    DEL_BY_TAG      : 'del_by_tag',
+    LOAD_BY_TAG     : 'load_by_tag'
 };
 

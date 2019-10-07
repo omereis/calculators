@@ -19,7 +19,7 @@
     <h2>Fit Jobs on Remote Server</h2>
     <table class="tblWholePage">
         <tr>
-            <th><u>Tags</u></th>
+            <th><u>Tags&nbsp<input type="button" onclick="onRefreshTagsClick()" value="Refresh"></u></th>
             <th><u>Jobs</u></th>
         </tr>
         <tr>
@@ -31,7 +31,7 @@
                     <tr>
                         <td style="text-align: center;">
                             <input type="button" id="btnDelByTag" onclick="onDeleteByTagClick()" value="Delete" disabled></button>
-                            <input type="button" id="btnLoadByTag" value="Load" disabled></button>
+                            <input type="button" id="btnLoadByTag" onclick="onLoadByTagClick()" value="Load" disabled></button>
                         </td>
                         <td style="text-align: center;"><input type="button" onclick="onCountJobs()" value="Count Jobs"></button></td>
                     </tr>
@@ -62,17 +62,17 @@
                             <th>Tag</th>
                             <th>Date</th>
                             <th>Time</th>
-                            <th>Status</th>
                             <th style="min-width: 120px;">&#x03C7<sup>2</sup></th>
                         </tr>
+                        <!--
                         <tr>
                             <td>345</td>
                             <td>Chi</td>
                             <td>Sep 25, 2019</td>
                             <td>2:35 pm</td>
-                            <td>Completed</td>
                             <td>17 </td>
                         </tr>
+                        -->
                     </td>
                 </table>
     </table>
