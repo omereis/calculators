@@ -30,8 +30,18 @@ function composeCountJobsMessage() {
     message['multi_processing'] = '';
     message['params'] = strTags;
     return (message);
-  }
-  //-----------------------------------------------------------------------------
+}
+//-----------------------------------------------------------------------------
+function composeDelJobsByCountMessage(astrChecked) {
+    var message = getMessageStart();
+
+    message['command'] = ServerCommands.DEL_BY_TAG;
+    message['fitter'] = 'refl1d';
+    message['multi_processing'] = '';
+    message['params'] = astrChecked.join(',');
+    return (message);
+}
+//-----------------------------------------------------------------------------
 function app_init() {
     tagsLocalToTable();
 }
@@ -69,6 +79,7 @@ function onTagCheck(id) {
     var count = countCheckedTags();
     var btn = document.getElementById('btnDelByTag');
     btn.disabled = (count == 0 ? true : false);
+    document.getElementById('btnLoadByTag').disabled = (count == 0 ? true : false);
     console.log(count);
 }
 //-----------------------------------------------------------------------------
@@ -141,11 +152,12 @@ function message_to_json(wsMsg) {
 //-----------------------------------------------------------------------------
 function handleWSReply (messageData) {
     try{
-        //var jsonMsg=message_to_json(messageData);
-        //var wjMsg = JSON.parse(message_to_json(messageData));
         var jsonMsg = JSON.parse(messageData.replace(/\'/g,'\"'))
         if (jsonMsg.command == 'get_tag_count') {
             updateTagsCount(jsonMsg.params);
+        }
+        else if (jsonMsg.command == ServerCommands.DEL_BY_TAG) {
+            updateDeletedTags(jsonMsg.params);
         }
         console.log(jsonMsg);
     }
@@ -165,6 +177,62 @@ function updateTagsCount(params) {
         cellCount = row.cells[1];
         cellCount.innerText = params[n].count;
     }
+}
+//-----------------------------------------------------------------------------
+function uploadCheckedTags() {
+    var n, astr, strTags = localStorage.getItem(get_refl1d_tag_name());
+    var astrChecked = [];
+
+    astr = strTags.split(',');
+    for (n=0 ; n < astr.length ; n++) {
+        var cbox = document.getElementById(astr[n]);
+        if (cbox.checked) {
+            astrChecked.push(astr[n]);
+        }
+    }
+    return (astrChecked);
+}
+//-----------------------------------------------------------------------------
+function sendWSMessage (message) {
+    var remoteData = loadLocalServerParams ();
+    var webSocketUrl = composeWebSocketURL (remoteData.server, remoteData.port);
+    openWSConnection(webSocketUrl, JSON.stringify(message));
+}
+//-----------------------------------------------------------------------------
+function onDeleteByTagClick() {
+    var astrChecked = uploadCheckedTags();
+    console.log(astrChecked);
+    var message = composeDelJobsByCountMessage(astrChecked);
+    sendWSMessage (message);
+}
+//-----------------------------------------------------------------------------
+function deleteRowByJobTag (jobTag) {
+    var tblTags = document.getElementById('tblTags');
+    var row, deleted=false;
+
+    for (row=3 ; (row < tblTags.rows.length) && (!deleted) ; row++) {
+        var jc = jQuery.parseHTML(tblTags.rows[row].cells[0].innerHTML);
+        if (jc[0].id == jobTag) {
+            tblTags.deleteRow(row);
+            deleted = true;
+        }
+    }
+}
+//-----------------------------------------------------------------------------
+function updateDeletedTags(astrDelTags) {
+    var n, astrLocalTags, strTags = localStorage.getItem(get_refl1d_tag_name());
+    var astr=[];
+
+    astrLocalTags = strTags.split(',');
+    for (n=0 ; n < astrLocalTags.length ; n++) {
+        if (astrDelTags.indexOf(astrLocalTags[n]) >= 0) {
+            deleteRowByJobTag (astrLocalTags[n]);
+        }
+        else{
+            astr.push (astrLocalTags[n]);
+        }
+    }
+    localStorage.setItem(get_refl1d_tag_name(), astr);
 }
 //-----------------------------------------------------------------------------
 
