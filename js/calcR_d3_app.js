@@ -1111,15 +1111,30 @@ var app_init = function(opts) {
       }
     }
 
+    var flagRemoteIdRecieved;
+
     function onRemoteTable () {
       var id = uploadRemoteID();
       var remote_message = composeRefl1dFitResults(id);
       try {
         if (webSocket.readyState == webSocket.CLOSED) {
+          onRemoteTable.counter = 0;
+          flagRemoteIdRecieved = false;
           openWSConnection(webSocketURL, JSON.stringify(remote_message));
         }
         else {
-          setTimeout (onRemoteTable, 250);
+          if (!flagRemoteIdRecieved) {
+            setTimeout (onRemoteTable, 250);
+          }
+/*
+          if (onRemoteTable.counter < 10) {
+            onRemoteTable.counter++;
+          }
+          else {
+            alert('possible websocket problem');
+            onRemoteTable.counter = 0;
+          }
+        */
         }
       }
       catch (err) {
@@ -1443,6 +1458,7 @@ var app_init = function(opts) {
   }
 
   function handleRefl1dRessults(wjMsg) {
+    flagRemoteIdRecieved = true;
     updateFromRemoteTable (wjMsg.params.json_data, wjMsg.params.chi_square);
   }
 

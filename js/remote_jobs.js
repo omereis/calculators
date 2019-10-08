@@ -246,9 +246,10 @@ function sendWSMessage (message) {
 //-----------------------------------------------------------------------------
 function onDeleteByTagClick() {
     var astrChecked = uploadCheckedTags();
-    console.log(astrChecked);
-    var message = composeDelJobsByCountMessage(astrChecked);
-    sendWSMessage (message);
+    if (confirm('Please confirm deletion of tags ' + astrChecked.join(',') + ' and their jobs')) {
+        var message = composeDelJobsByCountMessage(astrChecked);
+        sendWSMessage (message);
+    }
 }
 //-----------------------------------------------------------------------------
 function deleteRowByJobTag (jobTag) {
@@ -344,11 +345,6 @@ function jsonJobToRow (row, jsonParams, remoteID) {
 
     cell = row.insertCell (n++);
     cell.innerText = jsonParams.chi_square;
-}
-//-----------------------------------------------------------------------------
-function onMessageClick() {
-    localStorage.setItem('message','this is my message');
-    localStorage.removeItem('message');
 }
 //-----------------------------------------------------------------------------
 function onLoadRemoteJobClick(remoteID) {
