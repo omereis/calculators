@@ -17,10 +17,16 @@
 </head>
 <body onload="app_init()">
     <h2>Fit Jobs on Remote Server</h2>
+    <input type="button" onclick="onMessageClick()" value="Message">
     <table class="tblWholePage">
         <tr>
-            <th><u>Tags&nbsp<input type="button" onclick="onRefreshTagsClick()" value="Refresh"></u></th>
-            <th><u>Jobs</u></th>
+            <th><u>Tags&nbsp
+                <input type="button" onclick="onRefreshTagsClick()" value="Refresh" style="float: right;" title="Reload local tags"></u></th>
+            <!--<th style="border: 1px solid rgb(4, 245, 104);" colspan="1">Delete</th>-->
+            <th>
+                <u>Jobs</u>
+                <input type="button" value="Delete" title="Delete selected jobs" style="float: right;">
+            </th>
         </tr>
         <tr>
             <td style="border: 1px black solid;">
@@ -58,12 +64,13 @@
             <td style="vertical-align: top;">
                 <table width="100%" class="tableRemoteJobs" id="tblRemoteJobs">
                     <tr>
-                        <th id="th_id"><input type="checkbox" id="cboxAllJobs">Remote ID</th>
-                            <th>Tag</th>
-                            <th>Date</th>
-                            <th>Time</th>
-                            <th style="min-width: 120px;">&#x03C7<sup>2</sup></th>
-                        </tr>
+                        <th id="th_id"><input type="checkbox" id="cboxAllJobs"></th>
+                        <th>Remote ID</th>
+                        <th>Tag</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th style="min-width: 120px;">&#x03C7<sup>2</sup></th>
+                    </tr>
                         <!--
                         <tr>
                             <td>345</td>

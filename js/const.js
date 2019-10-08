@@ -11,6 +11,7 @@ const ServerCommands = {
     GET_TAGS_JOBS   : 'get_tags_jobs',
     GET_TAG_COUNT   : 'get_tag_count',
     DEL_BY_TAG      : 'del_by_tag',
-    LOAD_BY_TAG     : 'load_by_tag'
+    LOAD_BY_TAG     : 'load_by_tag',
+    JOB_DATA_BY_ID  : 'job_data_by_id'
 };
 
