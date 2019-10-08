@@ -321,25 +321,28 @@ function updateRemoteJobsTable(arrayParams) {
 }
 //-----------------------------------------------------------------------------
 function jsonJobToRow (row, jsonParams, remoteID) {
-    var cell;
+    var cell, n=0;
 
     while (row.cells.length > 0) {
         row.deleteCell(0);
     }
 
-    cell = row.insertCell (0);
+    cell = row.insertCell (n++);
+    cell.innerHTML = '<input type="checkbox" id="remote_job_'+ jsonParams.job_id + '">'
+
+    cell = row.insertCell (n++);
     cell.innerHTML = '<input type="button" id="' + composeJobElementID (jsonParams.job_id) + '" value="Load job ' + jsonParams.job_id + '" onclick="onLoadRemoteJobClick(' + remoteID + ')">'
 
-    cell = row.insertCell (1);
+    cell = row.insertCell (n++);
     cell.innerText = jsonParams.tag;
 
-    cell = row.insertCell (2);
+    cell = row.insertCell (n++);
     cell.innerText = jsonParams.sent_date;
 
-    cell = row.insertCell (3);
+    cell = row.insertCell (n++);
     cell.innerText = jsonParams.sent_time;
 
-    cell = row.insertCell (4);
+    cell = row.insertCell (n++);
     cell.innerText = jsonParams.chi_square;
 }
 //-----------------------------------------------------------------------------
@@ -356,7 +359,10 @@ function onLoadRemoteJobClick(remoteID) {
 function remoteResultsToCharts(jsonParams) {
     var strTable = '';
     if (jsonParams.length > 0) {
-        strTable = hex_to_ascii(jsonParams[0].fit_table);
+        //strTable = hex_to_ascii(jsonParams[0].fit_table);
+        //jsonParams[0].fit_table = strTable;
+        localStorage.setItem('refl1d_remote_fit', JSON.stringify(jsonParams[0]));
+        localStorage.removeItem('refl1d_remote_fit');
     }
     console.log(strTable);
     console.log(jsonParams);

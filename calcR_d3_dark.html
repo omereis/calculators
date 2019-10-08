@@ -266,23 +266,9 @@
       <div id="bottom_controls" align='center'></div>
     <div id="documentation_popup" ></div>
   <script>
-    $(window).on('storage', message_receive);
     webSocketURL = loadRemoteParams();
     window.CallParent = function() {
       alert(" Parent window Alert");
-    }
-    function message_receive(ev) {
-      if (ev.originalEvent.key!='message')
-        return; // ignore other keys
-      var message=JSON.parse(ev.originalEvent.newValue);
-      if (!message)
-        return; // ignore empty msg or msg reset
-
-      // here you act on messages.
-      // you can send objects like { 'command': 'doit', 'data': 'abcd' }
-      if (message.command == 'doit')
-        alert(message.data);
-    // etc.
     }
     $(function() {
   // dialog initializes

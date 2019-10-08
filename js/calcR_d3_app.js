@@ -998,9 +998,28 @@ var app_init = function(opts) {
       }
       catch (err) {
         console.log(err);
-      }    }
+      }
+    }
 
-      function setScriptFileName (datafilename) {
+    function remote_fit_message_handler(ev) {
+      console.log('message handler');
+      //set_data('#no data');
+      if (ev.originalEvent.key != 'refl1d_remote_fit') {
+        return; // ignore other keys
+      }
+      var jsonRemoteJob = JSON.parse(ev.originalEvent.newValue);
+      if (jsonRemoteJob) {
+        document.getElementById('scriptname').value = jsonRemoteJob.zip_name
+        document.getElementById('remote_tag').value = jsonRemoteJob.tag
+        document.getElementById('inRemoteID').value = jsonRemoteJob.job_id
+        set_data (jsonRemoteJob.data);
+        updateFromRemoteTable(jsonRemoteJob.fit_table, jsonRemoteJob.chi_square);
+        window.focus();
+      }
+      console.log(ev.originalEvent.newValue);
+    }
+
+    function setScriptFileName (datafilename) {
         var scriptName = '';
         var pt = datafilename.indexOf('.');
         if (pt > 0) {
@@ -1010,7 +1029,8 @@ var app_init = function(opts) {
         inText.value = scriptName;
         //var tmpText = document.getElementById('input_file_name');
         //tmpText.textContent = scriptName;
-      }    var fileinput = document.getElementById('datafile');
+      }
+      var fileinput = document.getElementById('datafile');
 
       fileinput.onchange = loadData;    
     
@@ -1289,18 +1309,7 @@ var app_init = function(opts) {
       }
     }
 
-/*
-    function message_to_json(wsMsg) {
-      var p = wsMsg.indexOf("'");
-      while (p >= 0) {
-        wsMsg = wsMsg.replace("'", '"');
-        p = wsMsg.indexOf("'");
-      }
-      return (wsMsg);
-    }
-*/
-
-    /**
+/**
  * Open a new WebSocket connection using the given parameters
  */
     //function openWSConnection(protocol, hostname, port, endpoint) {
@@ -1354,7 +1363,7 @@ var app_init = function(opts) {
         HandleStatusReply(wjMsg);
       }
       else if (wjMsg.command == ServerCommands.GET_REFL1D_RESULTS) {
-        HandleRefl1dRessults(wjMsg);
+        handleRefl1dRessults(wjMsg);
       }
       else if (wjMsg.command == ServerCommands.COMM_TEST) {
           HandleCommTest(wjMsg);
@@ -1433,8 +1442,12 @@ var app_init = function(opts) {
     return (txt);
   }
 
-  function HandleRefl1dRessults(wjMsg) {
-    var hexJson = wjMsg.params.json_data;
+  function handleRefl1dRessults(wjMsg) {
+    updateFromRemoteTable (wjMsg.params.json_data, wjMsg.params.chi_square);
+  }
+
+  function updateFromRemoteTable(hex_data, chi_square) {
+    var hexJson = hex_data;//wjMsg.params.json_data;
     var n, strBuf = '', strJson, jsonRes, out="";
     var tblResults = ['thickness'	+ '\t' + 'sld'	+ '\t' + 'mu'	+ '\t' + 'roughness'];
 
@@ -1451,7 +1464,7 @@ var app_init = function(opts) {
     }
     var strChi, strResults = tblResults.join('\n');
     try {
-      strChi = wjMsg.params.chi_square;
+      strChi = chi_square;//wjMsg.params.chi_square;
     }
     catch (err) {
       console.log(err);
@@ -1608,6 +1621,7 @@ var app_init = function(opts) {
     document.getElementById("btnRemoteStatus").onclick = onRemoteStatus;
     document.getElementById("btnRemoteTbl").onclick = onRemoteTable;
     document.getElementById("btnTestServer").onclick = onTestComm;
+    $(window).on('storage', remote_fit_message_handler);
 
     function onRemoteJobs () {
       var dlg = $('#'+ strRemoteJobsDialogName);
@@ -1892,3 +1906,4 @@ var app_init = function(opts) {
 function get_refl1d_tag_name() {
   return ('refl1d_sent_tags');
 }
+
