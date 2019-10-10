@@ -497,22 +497,14 @@ function saveRemoteParams (txtServer=null, txtPort=null) {
   return (remoteData);
 }
 //-----------------------------------------------------------------------------
-var strRemoteJobsDialogName = 'dlgRemoteJobs';
 var strDialogRemoteSetup = 'dialogRemoteSetup';
 //-----------------------------------------------------------------------------
 function editRemoteJobs () {
-  var dlg = $('#'+ strRemoteJobsDialogName);
   dlg.removeClass('ui-dialog-content');
   dlg.removeClass('ui-widget-content');
   dlg.removeClass('table');
   dlg.dialog('open');
 }
-//-----------------------------------------------------------------------------
-//loadRemoteJobs();
-//function loadRemoteJobs() {
-//  var strTags = localStorage.getItem('refl1d_sent_tags');
-//}
-//-----------------------------------------------------------------------------
 function editServerParams () {
   var remoteData = loadLocalServerParams (get_refl1d_tag_name());
   try {
@@ -528,28 +520,7 @@ function editServerParams () {
   startDialog (strDialogRemoteSetup);
 }
 
-//-----------------------------------------------------------------------------
-function editDialog (dialogID) {
-  console.log(dialogID);
-  startDialog (dialogID);
-}
-//-----------------------------------------------------------------------------
-function startDialog (dialogID) { // openDialog taken :-(
-  var dlg = $('#'+ dialogID);
-
-  dlg.removeClass('ui-dialog-content');
-  dlg.removeClass('ui-widget-content');
-  dlg.removeClass('table');
-  dlg.dialog('open');
-}
-//-----------------------------------------------------------------------------
 $( function() {
-    $('#'+ strRemoteJobsDialogName).dialog({
-      autoOpen: false,
-      height: 400,
-      width: 350,
-      modal: true
-    });
     $('#'+ strDialogRemoteSetup).dialog({
       autoOpen: false,
       height: 250,

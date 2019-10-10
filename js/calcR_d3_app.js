@@ -288,9 +288,7 @@ var app_init = function(opts) {
         update_plot_live();
       }
     }
-    
-    
-    
+
     var datafilename = "";
     var sld_plot = null;
     var refl_plot = null;
@@ -1696,9 +1694,6 @@ var app_init = function(opts) {
           c.innerText = 'c #' + (n+1).toString();
         }
       }
-/*      for (n=nRows-1 ; n > 0 ; n--) {
-        tbl.deleteRow(n);
-      }*/
     }
 
     function onTestComm () {
@@ -1712,7 +1707,6 @@ var app_init = function(opts) {
         else {
           fReady = false;
         }
-        //if (webSocket.readyState == webSocket.CLOSED) {
         if (fReady) {
           var spn = document.getElementById('spanTestCommResult');
           spn.innerText = "Waiting...";
