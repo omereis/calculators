@@ -277,7 +277,7 @@ function updateTagsCount(params) {
 }
 //-----------------------------------------------------------------------------
 function updateRemoteTagsCount(jsonMsgParams) {
-    var n, row;
+    var n, row, astrRemoteTags = [];
     var tblLocal = document.getElementById('tblTags');
     var tblRemote = document.getElementById('tblRemoteTags');
 
@@ -295,7 +295,9 @@ function updateRemoteTagsCount(jsonMsgParams) {
                 addTagRow (tblRemote, jsonMsgParams[n].job_id, jsonMsgParams[n].count);
             }
         }
+        astrRemoteTags.push(jsonMsgParams[n].job_id)
     }
+    localStorage.setItem('remote_tags', astrRemoteTags.join(','));
 }
 //-----------------------------------------------------------------------------
 function updateTagCount (table, row, count) {
@@ -343,8 +345,23 @@ function uploadCheckedTags() {
     var astrChecked = [];
 
     astr = strTags.split(',');
+    astrChecked = getCheckedByIDs(astr);
+/*
     for (n=0 ; n < astr.length ; n++) {
         var cbox = document.getElementById(astr[n]);
+        if (cbox.checked) {
+            astrChecked.push(astr[n]);
+        }
+    }
+*/
+    return (astrChecked);
+}
+//-----------------------------------------------------------------------------
+function getCheckedByIDs(astr) {
+    var n, cbox, astrChecked = [];
+
+    for (n=0 ; n < astr.length ; n++) {
+        cbox = document.getElementById(astr[n]);
         if (cbox.checked) {
             astrChecked.push(astr[n]);
         }
@@ -366,16 +383,15 @@ function onDeleteByTagClick() {
     }
 }
 //-----------------------------------------------------------------------------
-function deleteRowByJobTag (jobTag) {
-    var tblTags = document.getElementById('tblTags');
-    var row, deleted=false;
-
-    for (row=3 ; (row < tblTags.rows.length) && (!deleted) ; row++) {
-        var jc = jQuery.parseHTML(tblTags.rows[row].cells[0].innerHTML);
-        if (jc[0].id == jobTag) {
-            tblTags.deleteRow(row);
-            deleted = true;
-        }
+function deleteTagRowByTag (jobTag) {
+    try {
+        var cbox = document.getElementById(jobTag);
+        var row = cbox.parentElement.parentElement;
+        var tbl = row.parentElement.parentElement;
+        tbl.deleteRow (row.rowIndex);
+    }
+    catch (eer) {
+        console.log.og(err);
     }
 }
 //-----------------------------------------------------------------------------
@@ -394,7 +410,7 @@ function deleteJobRowByTag(tag) {
 }
 //-----------------------------------------------------------------------------
 function updateDeletedTags(astrDelTags) {
-    var n, astrLocalTags, strTags = localStorage.getItem(get_refl1d_tag_name());
+    var n, iDel, astrLocalTags, strTags = localStorage.getItem(get_refl1d_tag_name());
     var astr=[];
 
     if (strTags.indexOf('runtime error') >= 0) {
@@ -407,17 +423,16 @@ function updateDeletedTags(astrDelTags) {
     }
     else {
         astrLocalTags = strTags.split(',');
-        for (n=0 ; n < astrLocalTags.length ; n++) {
-            if (astrDelTags.indexOf(astrLocalTags[n]) >= 0) {
-                deleteRowByJobTag (astrLocalTags[n]);
-                deleteJobRowByTag(astrLocalTags[n]);
-            }
-            else{
-                astr.push (astrLocalTags[n]);
+        for (n=0 ; n < astrDelTags.length ; n++) {
+            deleteTagRowByTag (astrDelTags[n]);
+            deleteJobRowByTag(astrDelTags[n]);
+            iDel = astrLocalTags.indexOf(astrDelTags[n]);
+            if (iDel >= 0) {
+                astrLocalTags.splice (iDel, 1);
             }
         }
+        localStorage.setItem(get_refl1d_tag_name(), astrLocalTags.join(','));
     }
-    localStorage.setItem(get_refl1d_tag_name(), astr);
 }
 //-----------------------------------------------------------------------------
 function onLoadByTagClick() {
@@ -557,5 +572,16 @@ function removeFromJobsTable(jsonParams) {
 function onLoadRemoteTagsClick() {
     var message = composeCountRemoteTagsMessage();
     sendWSMessage (message);
+}
+//-----------------------------------------------------------------------------
+function onDeleteRemoteTagsClick() {
+    var strRemoteChecked = localStorage.getItem('remote_tags');
+    var astr = strRemoteChecked.split(',');
+
+    var astrChecked = getCheckedByIDs(astr);
+    if (confirm('Please confirm deletion of tags ' + astrChecked.join(',') + ' and their jobs')) {
+        var message = composeDelJobsByCountMessage(astrChecked);
+        sendWSMessage (message);
+    }
 }
 //-----------------------------------------------------------------------------
