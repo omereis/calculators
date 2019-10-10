@@ -50,3 +50,9 @@ body{
     color: black;
     min-width: 50px;
 }
+
+.control_cell {
+    border: 1px black solid;
+    width: 330px;
+    vertical-align:top;
+}
