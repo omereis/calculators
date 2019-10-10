@@ -27,13 +27,29 @@ function upload_multiprocessing() {
   }
   return (mp);
 }
-//-----------------------------------------------------------------------------
+
+function upload_problem_name() {
+  var problem_name='', fname_src = document.getElementById('datafile').value;
+  if (fname_src.length) {
+    var fname = fname_src.replace(/\\/g,'/');
+    var parts = fname.split('/');
+    if (parts.length > 0) {
+      problem_name = parts[parts.length - 1];
+    }
+    else {
+      problem_name = parts;
+    }
+  }
+  return (problem_name);
+}
+
 function composeRefl1dFitMessage(txtProblem) {
   var message = getMessageStart();
 
   message['command'] = ServerCommands.START_FIT;
   message['refl1d_problem'] = txtProblem;
   message['fitter'] = 'refl1d';
+  message['problem_name'] = upload_problem_name();
   message['multi_processing'] = upload_multiprocessing();
   return (message);
 }

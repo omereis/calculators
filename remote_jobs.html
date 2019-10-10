@@ -9,14 +9,15 @@
     <script src="/calculators/js/remote_jobs.js" charset="utf-8"></script>
 </head>
 <body onload="app_init()">
-    <h2>Fit Jobs on Remote Server</h2>
+    <h2 style="text-align: center;">Fit Jobs on Remote Server</h2>
     <table class="tblWholePage">
         <tr>
-            <th><u>Tags&nbsp
+            <th><u>Tags
                 <input type="button" onclick="onRefreshTagsClick()" value="Refresh" style="float: right;" title="Reload local tags"></u></th>
             <th>
+                <input type="button" onclick="onClearClick()" value="Clear" title="Clear the screen table. Jobs on remote server not deleted" style="float: left;">
                 <u>Jobs</u>
-                <input type="button" value="Delete" title="Delete selected jobs" style="float: right;">
+                <input type="button" value="Delete Jobs" onclick="onDeleteJobsClick()" title="Delete selected jobs" style="float: right;">
             </th>
         </tr>
         <tr>
@@ -24,7 +25,7 @@
                 <table width="100%" id="tblTags" class="tblTags">
                     <tr>
                         <td colspan="2" style="text-align: center;">
-                            <input type="button" id="btnDelByTag" onclick="onDeleteByTagClick()" value="Delete" disabled style="float: left;"></button>
+                            <input type="button" id="btnDelByTag" onclick="onDeleteByTagClick()" value="Delete Tags" disabled style="float: left;"></button>
                             Local Tags
                         </td>
                     </tr>
@@ -60,6 +61,7 @@
                     <tr>
                         <th id="th_id"><input type="checkbox" id="cboxAllJobs"></th>
                         <th>Remote ID</th>
+                        <th>File</th>
                         <th>Tag</th>
                         <th>Date</th>
                         <th>Time</th>

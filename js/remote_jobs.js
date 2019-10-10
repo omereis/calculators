@@ -32,6 +32,16 @@ function composeCountJobsMessage() {
     return (message);
 }
 //-----------------------------------------------------------------------------
+function composeDeleteJobsMessage(arDelIDs) {
+    var message = getMessageStart();
+
+    message['command'] = ServerCommands.DELETE;
+    message['fitter'] = 'refl1d';
+    message['multi_processing'] = '';
+    message['params'] = arDelIDs;
+    return (message);
+}
+//-----------------------------------------------------------------------------
 function composeDelJobsByCountMessage(astrChecked) {
     var message = getMessageStart();
 
@@ -204,6 +214,9 @@ function handleWSReply (messageData) {
         else if (jsonMsg.command == ServerCommands.JOB_DATA_BY_ID) {
             remoteResultsToCharts(jsonMsg.params);
         }
+        else if (jsonMsg.command == ServerCommands.DELETE) {
+            removeFromJobsTable(jsonMsg.params);
+        }
         console.log(jsonMsg);
     }
     catch (err) {
@@ -265,6 +278,20 @@ function deleteRowByJobTag (jobTag) {
     }
 }
 //-----------------------------------------------------------------------------
+function deleteJobRowByTag(tag) {
+    var row, n, tbl = document.getElementById('tblRemoteJobs');
+
+    for (n=1 ; n < tbl.rows.length ; ) {
+        row = tbl.rows[n];
+        if (row.cells[3].innerText == tag) {
+            tbl.deleteRow(n);
+        }
+        else {
+            n++;
+        }
+    }
+}
+//-----------------------------------------------------------------------------
 function updateDeletedTags(astrDelTags) {
     var n, astrLocalTags, strTags = localStorage.getItem(get_refl1d_tag_name());
     var astr=[];
@@ -282,6 +309,7 @@ function updateDeletedTags(astrDelTags) {
         for (n=0 ; n < astrLocalTags.length ; n++) {
             if (astrDelTags.indexOf(astrLocalTags[n]) >= 0) {
                 deleteRowByJobTag (astrLocalTags[n]);
+                deleteJobRowByTag(astrLocalTags[n]);
             }
             else{
                 astr.push (astrLocalTags[n]);
@@ -321,6 +349,10 @@ function updateRemoteJobsTable(arrayParams) {
     console.log(jsonParams);
 }
 //-----------------------------------------------------------------------------
+function getRemotejobPretext () {
+    return ('remote_job_');
+}
+//-----------------------------------------------------------------------------
 function jsonJobToRow (row, jsonParams, remoteID) {
     var cell, n=0;
 
@@ -329,10 +361,14 @@ function jsonJobToRow (row, jsonParams, remoteID) {
     }
 
     cell = row.insertCell (n++);
-    cell.innerHTML = '<input type="checkbox" id="remote_job_'+ jsonParams.job_id + '">'
+    //cell.innerHTML = '<input type="checkbox" id="remote_job_'+ jsonParams.job_id + '">'
+    cell.innerHTML = '<input type="checkbox" id="' + getRemotejobPretext() + jsonParams.job_id + '">'
 
     cell = row.insertCell (n++);
     cell.innerHTML = '<input type="button" id="' + composeJobElementID (jsonParams.job_id) + '" value="Load job ' + jsonParams.job_id + '" onclick="onLoadRemoteJobClick(' + remoteID + ')">'
+
+    cell = row.insertCell (n++);
+    cell.innerText = jsonParams.problem_name;
 
     cell = row.insertCell (n++);
     cell.innerText = jsonParams.tag;
@@ -355,10 +391,13 @@ function onLoadRemoteJobClick(remoteID) {
 function remoteResultsToCharts(jsonParams) {
     var strTable = '';
     if (jsonParams.length > 0) {
-        //strTable = hex_to_ascii(jsonParams[0].fit_table);
-        //jsonParams[0].fit_table = strTable;
-        localStorage.setItem('refl1d_remote_fit', JSON.stringify(jsonParams[0]));
-        localStorage.removeItem('refl1d_remote_fit');
+        if (jsonParams[0].hasOwnProperty('error')) {
+            alert ('Error in job #' + jsonParams[0].job_id + '\n' + jsonParams[0].error);
+        }
+        else {
+            localStorage.setItem('refl1d_remote_fit', JSON.stringify(jsonParams[0]));
+            localStorage.removeItem('refl1d_remote_fit');
+        }
     }
     console.log(strTable);
     console.log(jsonParams);
@@ -374,4 +413,41 @@ function hex_to_ascii(str1)
 	}
 	return str;
  }
- //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+function onClearClick() {
+    var tbl = document.getElementById('tblRemoteJobs');
+    
+    while (tbl.rows.length > 1) {
+        tbl.deleteRow(1);
+    }
+}
+//-----------------------------------------------------------------------------
+function onDeleteJobsClick() {
+    var n, tbl = document.getElementById('tblRemoteJobs'), arDelIDs = [];
+
+    for (n=1 ; n < tbl.rows.length ; n++) {
+        if (tbl.rows[n].cells.length > 0) {
+            var jc = jQuery.parseHTML(tbl.rows[n].cells[0].innerHTML);
+            var cbox = document.getElementById(jc[0].id);
+            if (cbox.checked){
+                var id = jc[0].id.substring(getRemotejobPretext().length, jc[0].id.length);
+                arDelIDs.push(id);
+            }
+        }
+    }
+    if (confirm('Please confirm deletion of jobs ' + arDelIDs.join(','))) {
+        var message = composeDeleteJobsMessage (arDelIDs);
+        sendWSMessage (message);
+    }
+}
+//-----------------------------------------------------------------------------
+function removeFromJobsTable(jsonParams) {
+    var n, tbl = document.getElementById('tblRemoteJobs');
+
+    for (n=0 ; n < jsonParams.length ; n++) {
+        var id = getRemotejobPretext () + jsonParams[n];
+        var row = document.getElementById(id).parentElement.parentElement;
+        tbl.deleteRow(row.rowIndex);
+    }
+}
+//-----------------------------------------------------------------------------
