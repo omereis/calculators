@@ -83,6 +83,7 @@ function composeLoadJobsByIDMessage(remoteID) {
 }
 //-----------------------------------------------------------------------------
 function app_init() {
+    $(window).on('storage', remote_fit_job_sent);
     tagsLocalToTable();
 }
 //-----------------------------------------------------------------------------
@@ -139,7 +140,7 @@ function onTagCheck(id) {
     var count = countCheckedTags();
     var btn = document.getElementById('btnDelByTag');
     btn.disabled = (count == 0 ? true : false);
-    document.getElementById('btnLoadByTag').disabled = (count == 0 ? true : false);
+    document.getElementById('btnDelByTag').disabled = (count == 0 ? true : false);
     console.log(count);
 /*
 */
@@ -304,6 +305,22 @@ function updateTagCount (table, row, count) {
     table.rows[row].cells[1].innerText = count.toString();
 }
 //-----------------------------------------------------------------------------
+function incrementTagCount (table, row) {
+    var count;
+
+    try {
+        count = Number(table.rows[row].cells[1].innerText);
+        if (isNaN(count)) {
+            count = 0;
+        }
+    }
+    catch (err) {
+        count = 0;
+        console.log(err);
+    }
+    updateTagCount (table, row, count + 1);
+}
+//-----------------------------------------------------------------------------
 function addCountCell (row, count) {
     var cell = row.insertCell(1);
     cell.style.textAlign="center";
@@ -328,8 +345,22 @@ function addTagCheckbox (row, job_id) {
     cell.innerHTML = '<input type="checkbox" id="' + job_id + '" onclick="onTagCheck(id)">' + job_id;
 }
 //-----------------------------------------------------------------------------
-function findRowByTagName (tagName, table) {
+function findRowInTable (table, column, content) {
     var n, cell, nFound = -1;
+
+    for (n=0 ; (n < table.rows.length) && (nFound < 0) ; n++) {
+        cell = table.rows[n].cells[column];
+        if (cell.innerText == content) {
+            nFound = n;
+        }
+    }
+    return (nFound);
+}
+//-----------------------------------------------------------------------------
+function findRowByTagName (tagName, table) {
+    return (findRowInTable (table, 0, tagName));
+/*
+        var n, cell, nFound = -1;
 
     for (n=0 ; (n < table.rows.length) && (nFound < 0) ; n++) {
         cell = table.rows[n].cells[0];
@@ -338,6 +369,7 @@ function findRowByTagName (tagName, table) {
         }
     }
     return (nFound);
+*/
 }
 //-----------------------------------------------------------------------------
 function uploadCheckedTags() {
@@ -471,19 +503,52 @@ function getRemotejobPretext () {
     return ('remote_job_');
 }
 //-----------------------------------------------------------------------------
+function getJsonKeys (json) {
+    var k, ak = [];
+
+    for (k in json) {
+        ak.push (k);
+    }
+    return (ak);
+}
+//-----------------------------------------------------------------------------
+function getRemoteJobCheckbox (job_id) {
+    return ('<input type="checkbox" id="' + getRemotejobPretext() + job_id + '">');
+}
+//-----------------------------------------------------------------------------
+function getRemoteJobButton (remoteID, addButton=true) {
+    var strContent;
+    if (addButton) {
+        strContent = '<input type="button" id="' + composeJobElementID (remoteID) + '" value="Load job ' + remoteID + '" onclick="onLoadRemoteJobClick(' + remoteID + ')">';
+    }
+    else {
+        strContent = remoteID;
+    }
+    return (strContent);
+}
+//-----------------------------------------------------------------------------
 function jsonJobToRow (row, jsonParams, remoteID) {
     var cell, n=0;
+    var aKeys = getJsonKeys (jsonParams);
 
     while (row.cells.length > 0) {
         row.deleteCell(0);
     }
 
     cell = row.insertCell (n++);
-    //cell.innerHTML = '<input type="checkbox" id="remote_job_'+ jsonParams.job_id + '">'
-    cell.innerHTML = '<input type="checkbox" id="' + getRemotejobPretext() + jsonParams.job_id + '">'
 
-    cell = row.insertCell (n++);
-    cell.innerHTML = '<input type="button" id="' + composeJobElementID (jsonParams.job_id) + '" value="Load job ' + jsonParams.job_id + '" onclick="onLoadRemoteJobClick(' + remoteID + ')">'
+    if (aKeys.indexOf ('job_id') >= 0) {
+        cell.innerHTML = getRemoteJobCheckbox (jsonParams.job_id);
+
+        cell = row.insertCell (n++);
+        cell.innerHTML = getRemoteJobButton (remoteID);
+    }
+    else if (aKeys.indexOf ('local_id')) {
+        cell.innerText = ' '
+        cell = row.insertCell (n++);
+        cell.innerHTML = jsonParams.local_id
+    }
+
 
     cell = row.insertCell (n++);
     cell.innerText = jsonParams.problem_name;
@@ -582,6 +647,102 @@ function onDeleteRemoteTagsClick() {
     if (confirm('Please confirm deletion of tags ' + astrChecked.join(',') + ' and their jobs')) {
         var message = composeDelJobsByCountMessage(astrChecked);
         sendWSMessage (message);
+    }
+}
+//-----------------------------------------------------------------------------
+function remote_fit_job_sent (ev) {
+    if (ev.originalEvent.key == 'refl1d_remote_fit_sent') {
+        var strMessage = ev.originalEvent.newValue;
+        if (strMessage != null) {
+            var jsonMessage = JSON.parse(strMessage);
+            handleNewFitJobSent (JSON.parse(strMessage));
+        }
+    }
+    else if (ev.originalEvent.key == 'remote_id_local_id') {
+        var strMessage = ev.originalEvent.newValue;
+        if (strMessage != null) {
+            updateRemoteIdFromLocalId (JSON.parse(strMessage));
+        }
+    }
+    else if (ev.originalEvent.key == 'refl1d_fit_completed') {
+        var strMessage = ev.originalEvent.newValue;
+        if (strMessage != null) {
+            updateCompletedRefl1dFit (JSON.parse(strMessage));
+        }
+    }
+}
+//-----------------------------------------------------------------------------
+function handleNewFitJobSent (jsonMessage) {
+    incrementLocalTag (jsonMessage.tag);
+    addRemoteJob(jsonMessage);
+    console.log(jsonMessage);
+}
+//-----------------------------------------------------------------------------
+function incrementLocalTag (messageTag) {
+    var tblLocal = document.getElementById('tblTags');
+    var row = findRowByTagName (messageTag, tblLocal);
+    if (row > 0) {
+        incrementTagCount (tblLocal, row);
+    }
+    else {
+            addTagRow (tblLocal, messageTag, 1);
+    }
+}
+//-----------------------------------------------------------------------------
+const monthNames = ["Jan.", "Feb.", "Mar.", "Apr.", "May", "Jun.", "Jul.", "Aug.", "Sep.", "Oct.", "Nov.", "Dec."];
+//-----------------------------------------------------------------------------
+function addRemoteJob(jsonMessage) {
+    var row, n, tbl = document.getElementById('tblRemoteJobs');
+    jsonMessage.sent_date = monthNames[jsonMessage.message_time.month - 1] + ' ' + jsonMessage.message_time.date.toString() + ', ' + jsonMessage.message_time.year.toString();
+
+    var strMin = jsonMessage.message_time.minutes.toString();
+    if (jsonMessage.message_time.minutes < 10) {
+        strMin = '0' + strMin;
+    }
+    jsonMessage.sent_time = jsonMessage.message_time.minutes.toString() + ':' + strMin;
+    jsonMessage.chi_square = '-'
+
+    row = tbl.insertRow(tbl.rows.length);
+    jsonJobToRow (row, jsonMessage, jsonMessage.local_id);
+    console.log(jsonMessage);
+}
+//-----------------------------------------------------------------------------
+function updateRemoteIdFromLocalId (jsonMessage) {
+    var idRemote, idLocal, keys;
+
+    var table = document.getElementById('tblRemoteJobs');
+    keys = getJsonKeys (jsonMessage);
+    idLocal = keys[0];
+    idRemote = jsonMessage[idLocal];
+    console.log(idLocal);
+    var row = findRowInTable (table, 1, idLocal);
+    if (row > 0) {
+        table.rows[row].cells[0].innerHTML = getRemoteJobCheckbox (idRemote);
+        table.rows[row].cells[1].innerHTML = getRemoteJobButton (idRemote, false);
+    }
+}
+//-----------------------------------------------------------------------------
+function updateCompletedRefl1dFit (jsonMessage) {
+    try {
+        var table = document.getElementById('tblRemoteJobs');
+        var row = findRowInTable (table, 1, jsonMessage.job_id);
+        if (row > 0) {
+            table.rows[row].cells[1].innerHTML = getRemoteJobButton (jsonMessage.job_id, true);
+            table.rows[row].cells[6].innerText = jsonMessage.chi_square;
+        }
+    }
+    catch (err) {
+        console.log(err);
+    }
+}
+function onSelectAllJobsClick(id) {
+    var cbox = document.getElementById(id);
+    var checked = cbox.checked;
+    var table = document.getElementById('tblRemoteJobs');
+    for (var n=1 ; n < table.rows.length ; n++) {
+        var jc = jQuery.parseHTML(table.rows[n].cells[0].innerHTML);
+        cbox = document.getElementById(jc[0].id);
+        cbox.checked = checked;
     }
 }
 //-----------------------------------------------------------------------------

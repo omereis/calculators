@@ -43,6 +43,39 @@ function upload_problem_name() {
   return (problem_name);
 }
 
+function generateLocalJobKey (local_keys, currentTag) {
+  var n, found, key;
+  if (local_keys == null) {
+    key = currentTag;
+  }
+  else {
+    n = 0;
+    var aKeys = local_keys.split(',');
+    found = true;
+    while (found) {
+      n++;
+      key = currentTag + '_' + n.toString();
+      found = local_keys.indexOf(key) >= 0;
+    }
+  }
+  return (key);
+}
+
+function generateLocalID () {
+  var local_keys = localStorage.getItem('refl1d_jobs_keys');
+  var currentKey = uploadTag();
+  if (local_keys == null) {
+    local_keys = [];
+  }
+  else {
+    currentKey = generateLocalJobKey (local_keys, currentKey);
+    local_keys = local_keys.split(',');
+  }
+  local_keys.push(currentKey);
+  localStorage.setItem('refl1d_jobs_keys', local_keys.join(','));
+  return currentKey;
+}
+
 function composeRefl1dFitMessage(txtProblem) {
   var message = getMessageStart();
 
@@ -51,6 +84,7 @@ function composeRefl1dFitMessage(txtProblem) {
   message['fitter'] = 'refl1d';
   message['problem_name'] = upload_problem_name();
   message['multi_processing'] = upload_multiprocessing();
+  message['local_id'] = generateLocalID ();
   return (message);
 }
 //-----------------------------------------------------------------------------
@@ -58,9 +92,7 @@ function composeGetLocalIDMessage() {
   var message = getMessageStart();
 
   message['command'] = ServerCommands.GET_LOCAL_ID;
-  //message['refl1d_problem'] = '';
   message['fitter'] = 'refl1d';
-  //message['multi_processing'] = upload_multiprocessing();
   return (message);
 }
 //-----------------------------------------------------------------------------
@@ -115,10 +147,8 @@ function composeTagsJobsMessage(strTags) {
 //-----------------------------------------------------------------------------
 function uploadRemoteID() {
   var id;
-  //var s = document.getElementById('spanRemoteID');
   var s = document.getElementById('inRemoteID');
   if (s)
-    //id = s.innerText;
     id = s.value;
   else
     id = '';
@@ -1331,6 +1361,7 @@ var app_init = function(opts) {
       msg_data['data']   = jsnData;
       try {
         var message = composeRefl1dFitMessage(JSON.stringify(msg_data));
+        saveMessageToLocal (JSON.stringify(message));
         openWSConnection(webSocketURL, JSON.stringify(message));
       }
       catch (err) {
@@ -1338,7 +1369,12 @@ var app_init = function(opts) {
       }
     }
 
-/**
+    function saveMessageToLocal (strMessage) {
+      localStorage.setItem('refl1d_remote_fit_sent', strMessage)
+      localStorage.removeItem('refl1d_remote_fit_sent');
+    }
+
+    /**
  * Open a new WebSocket connection using the given parameters
  */
     //function openWSConnection(protocol, hostname, port, endpoint) {
@@ -1430,8 +1466,13 @@ var app_init = function(opts) {
   function display_remote_id(wjMsg) {
     var p = wjMsg.params;
     var keys = [];
-    for (var k in p) keys.push(k);
+    for (var k in p) {
+      keys.push(k);
+    }
     var remote_id = p[keys[0]];
+    // signal fit job manager of a remote ID for temporary local ID
+    localStorage.setItem('remote_id_local_id', JSON.stringify(p));
+    localStorage.removeItem('remote_id_local_id');
     setRemoteID (remote_id);
   }
 
@@ -1472,7 +1513,12 @@ var app_init = function(opts) {
   }
 
   function handleRefl1dRessults(wjMsg) {
+    var jsonSignal = {};
     flagRemoteIdRecieved = true;
+    jsonSignal['chi_square'] = wjMsg.params.chi_square;
+    jsonSignal['job_id'] = wjMsg.params.job_id;
+    localStorage.setItem('refl1d_fit_completed', JSON.stringify(jsonSignal));
+    localStorage.removeItem ('refl1d_fit_completed');
     updateFromRemoteTable (wjMsg.params.json_data, wjMsg.params.chi_square);
   }
 

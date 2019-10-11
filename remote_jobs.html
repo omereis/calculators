@@ -4,6 +4,8 @@
     <title>Manage Fit Jobs on Remote Server</title>
     <link rel="stylesheet" href="css/remote_jobs.css"/>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="//code.jquery.com/jquery-1.12.4.min.js" type="text/javascript"></script>
+    <script src="//code.jquery.com/ui/1.12.0/jquery-ui.min.js" type="text/javascript"></script>
     <script src="/calculators/js/remote_fit.js" charset="utf-8"></script>
     <script src="/calculators/js/const.js" charset="utf-8"></script>
     <script src="/calculators/js/remote_jobs.js" charset="utf-8"></script>
@@ -53,7 +55,7 @@
             <td style="vertical-align: top;">
                 <table width="100%" class="tableRemoteJobs" id="tblRemoteJobs">
                     <tr>
-                        <th id="th_id"><input type="checkbox" id="cboxAllJobs"></th>
+                        <th id="th_id"><input type="checkbox" id="cboxAllJobs" onclick="onSelectAllJobsClick(this.id)" title="Select All"></th>
                         <th>Remote ID</th>
                         <th>File</th>
                         <th>Tag</th>
