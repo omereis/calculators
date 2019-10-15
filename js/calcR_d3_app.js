@@ -40,6 +40,9 @@ function upload_problem_name() {
       problem_name = parts;
     }
   }
+  else {
+    problem_name = document.getElementById('idDataFileName').value;
+  }
   return (problem_name);
 }
 
@@ -1058,6 +1061,7 @@ var app_init = function(opts) {
         document.getElementById('scriptname').value = jsonRemoteJob.zip_name
         document.getElementById('remote_tag').value = jsonRemoteJob.tag
         document.getElementById('inRemoteID').value = jsonRemoteJob.job_id
+        /*document.getElementById('idDataFileName').value*/datafilename = jsonRemoteJob.problem_name;
         set_data (jsonRemoteJob.data);
         updateFromRemoteTable(jsonRemoteJob.fit_table, jsonRemoteJob.chi_square);
         window.focus();
@@ -1526,6 +1530,7 @@ var app_init = function(opts) {
     flagRemoteIdRecieved = true;
     jsonSignal['chi_square'] = wjMsg.params.chi_square;
     jsonSignal['job_id'] = wjMsg.params.job_id;
+    jsonSignal['problem_name'] = wjMsg.params.problem_name;
     localStorage.setItem('refl1d_fit_completed', JSON.stringify(jsonSignal));
     localStorage.removeItem ('refl1d_fit_completed');
     updateFromRemoteTable (wjMsg.params.json_data, wjMsg.params.chi_square);
