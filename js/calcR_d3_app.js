@@ -256,7 +256,7 @@ var app_options = {
 
 var app_init = function(opts) {
   try {
-    document.getElementById('remote_tag').value = generateTag();
+    document.getElementById('remote_tag').value = generateTag(get_refl1d_tag_name());
   }
   catch (err) {
     console.log(err);
@@ -897,6 +897,7 @@ var app_init = function(opts) {
           .property("checked", true)
           .attr("name", "mode")
           .attr("value", "edit")
+          .attr("id", "set_edit_mode")
           .on("change", update_mode)
       modeControls
         .append("label")
@@ -906,6 +907,7 @@ var app_init = function(opts) {
           .property("checked", false)
           .attr("name", "mode")
           .attr("value", "fit")
+          .attr("id", "set_fit_mode")
           .on("change", update_mode)
       
       var fitControls = d3.select("#" + target_id).append('div')
@@ -1127,18 +1129,25 @@ var app_init = function(opts) {
     }
 
   function save_tag_to_local () {
-    var currentTag = uploadTag();
-    var savedTags, strTags = localStorage.getItem(get_refl1d_tag_name());
-
-    if (strTags != null) {
-      savedTags = strTags.split(',');
-    }
-    else {
-      savedTags = [];
-    }
-    if (savedTags.indexOf(currentTag) < 0) {
-      savedTags.push(currentTag);
+    try{
+      var currentTag = uploadTag();
+      var iTag, savedTags, strTags = localStorage.getItem(get_refl1d_tag_name());
+  
+      if (strTags != null) {
+        savedTags = strTags.split(',');
+      }
+      else {
+        savedTags = [];
+      }
+      iTag = savedTags.indexOf(currentTag);
+      if (iTag >= 0) {
+        savedTags.splice(iTag, 1);
+      }
+      savedTags.splice(0, 0, currentTag);
       localStorage.setItem(get_refl1d_tag_name(), savedTags.toString());
+    }
+    catch (err) {
+      console.log(err);
     }
     console.log(savedTags);
   }

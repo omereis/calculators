@@ -85,6 +85,7 @@ function composeLoadJobsByIDMessage(remoteID) {
 function app_init() {
     $(window).on('storage', remote_fit_job_sent);
     tagsLocalToTable();
+    onLoadRemoteTagsClick();
 }
 //-----------------------------------------------------------------------------
 function tagsLocalToTable() {
@@ -277,11 +278,18 @@ function updateTagsCount(params) {
     }
 }
 //-----------------------------------------------------------------------------
+function deleteAllTableRows(table) {
+    while (table.rows.length > 3) {
+        table.deleteRow (3);
+    }
+}
+//-----------------------------------------------------------------------------
 function updateRemoteTagsCount(jsonMsgParams) {
     var n, row, astrRemoteTags = [];
     var tblLocal = document.getElementById('tblTags');
     var tblRemote = document.getElementById('tblRemoteTags');
 
+    deleteAllTableRows(tblRemote);
     for (n=0 ; n < jsonMsgParams.length ; n++) {
         row = findRowByTagName (jsonMsgParams[n].job_id, tblLocal);
         if (row > 0) {

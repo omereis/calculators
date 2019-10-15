@@ -343,8 +343,8 @@ var wordList = [
     return results;
   }
 //-----------------------------------------------------------------------------
-function generateTag() {
-    var latest_tag = get_latest_tag();
+function generateTag(tag_label) {
+    var latest_tag = get_latest_tag(tag_label);
     if (latest_tag == null)
         latest_tag = random_words();
     return (latest_tag);
@@ -352,16 +352,18 @@ function generateTag() {
 //var local_tag = 'reflectivity_tag';
 var local_tag_name = 'bumps_tag';
 //-----------------------------------------------------------------------------
-function get_latest_tag() {
-    current_tags = localStorage.getItem(local_tag_name);
-    if (current_tags != null) {
-        all_tags = current_tags.split(';');
-        latest_tag = all_tags[0];
-    }
-    else {
-        latest_tag = null;
-    }
-    return (latest_tag);
+function get_latest_tag(tag_label) {
+  var tn = get_refl1d_tag_name();
+  current_tags = localStorage.getItem(tag_label);
+  //current_tags = localStorage.getItem(local_tag_name);
+  if (current_tags != null) {
+    all_tags = current_tags.split(',');
+    latest_tag = all_tags[0];
+  }
+  else {
+    latest_tag = null;
+  }
+  return (latest_tag);
 }
 //-----------------------------------------------------------------------------
 function save_tag_to_local(tag) {

@@ -519,6 +519,15 @@ function editServerParams () {
   document.getElementById('dlgPort').value = remoteData.port;
   startDialog (strDialogRemoteSetup);
 }
+//-----------------------------------------------------------------------------
+function startDialog (dialogID) { // openDialog taken :-(
+  var dlg = $('#'+ dialogID);
+
+  dlg.removeClass('ui-dialog-content');
+  dlg.removeClass('ui-widget-content');
+  dlg.removeClass('table');
+  dlg.dialog('open');
+}
 
 $( function() {
     $('#'+ strDialogRemoteSetup).dialog({
