@@ -41,7 +41,7 @@ function upload_problem_name() {
     }
   }
   else {
-    problem_name = document.getElementById('idDataFileName').value;
+    problem_name = datafilename;//document.getElementById('idDataFileName').value;
   }
   return (problem_name);
 }
@@ -116,6 +116,7 @@ function composeCommTest() {
   message['fitter'] = '';
   return (message);
 }
+/*
 //-----------------------------------------------------------------------------
 function composeRefl1dStatusMessage() {
   var message = null, id = uploadRemoteID();
@@ -127,6 +128,7 @@ function composeRefl1dStatusMessage() {
   }
   return (message);
 }
+*/
 //-----------------------------------------------------------------------------
 function composeRefl1dStatusMessage() {
   var message = null, id = uploadRemoteID();
@@ -1373,7 +1375,8 @@ var app_init = function(opts) {
       msg_data['script'] = jsnScript;
       msg_data['data']   = jsnData;
       try {
-        var message = composeRefl1dFitMessage(JSON.stringify(msg_data));
+        //var message = composeRefl1dFitMessage(JSON.stringify(msg_data));
+        var message = composeRefl1dFitMessage(msg_data);
         saveMessageToLocal (JSON.stringify(message));
         openWSConnection(webSocketURL, JSON.stringify(message));
       }
