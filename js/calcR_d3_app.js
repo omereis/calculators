@@ -41,7 +41,7 @@ function upload_problem_name() {
     }
   }
   else {
-    problem_name = datafilename;//document.getElementById('idDataFileName').value;
+    problem_name = datafilename;
   }
   return (problem_name);
 }
@@ -1050,7 +1050,7 @@ var app_init = function(opts) {
         document.getElementById('scriptname').value = jsonRemoteJob.zip_name
         document.getElementById('remote_tag').value = jsonRemoteJob.tag
         document.getElementById('inRemoteID').value = jsonRemoteJob.job_id
-        /*document.getElementById('idDataFileName').value*/datafilename = jsonRemoteJob.problem_name;
+        datafilename = jsonRemoteJob.problem_name;
         set_data (jsonRemoteJob.data);
         updateFromRemoteTable(jsonRemoteJob.fit_table, jsonRemoteJob.chi_square);
         window.focus();
