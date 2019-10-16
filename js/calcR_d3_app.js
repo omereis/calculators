@@ -90,7 +90,7 @@ function composeRefl1dFitMessage(txtProblem) {
   message['local_id'] = generateLocalID ();
   return (message);
 }
-//-----------------------------------------------------------------------------
+
 function composeGetLocalIDMessage() {
   var message = getMessageStart();
 
@@ -98,7 +98,7 @@ function composeGetLocalIDMessage() {
   message['fitter'] = 'refl1d';
   return (message);
 }
-//-----------------------------------------------------------------------------
+
 function composeRefl1dFitResults(remoteID) {
   var message = getMessageStart();
 
@@ -107,7 +107,7 @@ function composeRefl1dFitResults(remoteID) {
   message['fitter'] = 'refl1d';
   return (message);
 }
-//-----------------------------------------------------------------------------
+
 function composeCommTest() {
   var message = getMessageStart();
 
@@ -116,8 +116,7 @@ function composeCommTest() {
   message['fitter'] = '';
   return (message);
 }
-/*
-//-----------------------------------------------------------------------------
+
 function composeRefl1dStatusMessage() {
   var message = null, id = uploadRemoteID();
   if (Number(id) > 0) {
@@ -128,19 +127,7 @@ function composeRefl1dStatusMessage() {
   }
   return (message);
 }
-*/
-//-----------------------------------------------------------------------------
-function composeRefl1dStatusMessage() {
-  var message = null, id = uploadRemoteID();
-  if (Number(id) > 0) {
-    message = getMessageStart();
-    message['command'] = ServerCommands.GET_STATUS;
-    message['params'] = id;
-    message['fitter'] = 'refl1d';
-  }
-  return (message);
-}
-//-----------------------------------------------------------------------------
+
 function composeTagsJobsMessage(strTags) {
   var message = getMessageStart();
 
@@ -149,7 +136,7 @@ function composeTagsJobsMessage(strTags) {
   message['fitter'] = 'refl1d';
   return (message);
 }
-//-----------------------------------------------------------------------------
+
 function uploadRemoteID() {
   var id;
   var s = document.getElementById('inRemoteID');
@@ -159,7 +146,7 @@ function uploadRemoteID() {
     id = '';
   return (id);
 }
-//-----------------------------------------------------------------------------
+
 function getMessageStart() {
   var message = new Object;
 
@@ -168,7 +155,7 @@ function getMessageStart() {
   message['message_time'] = getMessageTime();
   return (message);
 }
-//-----------------------------------------------------------------------------
+
 function uploadTag() {
   var tag = document.getElementById('remote_tag').value;
   if (tag == '')
@@ -176,7 +163,7 @@ function uploadTag() {
       //tag = generateTag('remote_tag');
   return (tag);
 }
-//-----------------------------------------------------------------------------
+
 function getMessageTime() {
   var d = new Date;
   var date_json = {};
