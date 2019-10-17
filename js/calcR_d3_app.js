@@ -41,7 +41,7 @@ function upload_problem_name() {
     }
   }
   else {
-    problem_name = datafilename;
+    problem_name = document.getElementById('datafile').defaultValue;
   }
   return (problem_name);
 }
@@ -1042,20 +1042,20 @@ var app_init = function(opts) {
     function remote_fit_message_handler(ev) {
       console.log('message handler');
       //set_data('#no data');
-      if (ev.originalEvent.key != 'refl1d_remote_fit') {
-        return; // ignore other keys
+      if (ev.originalEvent.key == 'refl1d_remote_fit') {
+        var jsonRemoteJob = JSON.parse(ev.originalEvent.newValue);
+        if (jsonRemoteJob) {
+          document.getElementById('scriptname').value = jsonRemoteJob.zip_name
+          document.getElementById('remote_tag').value = jsonRemoteJob.tag
+          document.getElementById('inRemoteID').value = jsonRemoteJob.job_id
+          datafilename = jsonRemoteJob.problem_name;
+          document.getElementById('datafile').defaultValue = jsonRemoteJob.problem_name;
+          set_data (jsonRemoteJob.data);
+          updateFromRemoteTable(jsonRemoteJob.fit_table, jsonRemoteJob.chi_square);
+          window.focus();
+        }
+        console.log(ev.originalEvent.newValue);
       }
-      var jsonRemoteJob = JSON.parse(ev.originalEvent.newValue);
-      if (jsonRemoteJob) {
-        document.getElementById('scriptname').value = jsonRemoteJob.zip_name
-        document.getElementById('remote_tag').value = jsonRemoteJob.tag
-        document.getElementById('inRemoteID').value = jsonRemoteJob.job_id
-        datafilename = jsonRemoteJob.problem_name;
-        set_data (jsonRemoteJob.data);
-        updateFromRemoteTable(jsonRemoteJob.fit_table, jsonRemoteJob.chi_square);
-        window.focus();
-      }
-      console.log(ev.originalEvent.newValue);
     }
 
     function setScriptFileName (datafilename) {
@@ -1626,11 +1626,15 @@ var app_init = function(opts) {
         data_file_name = document.getElementById('datafile').files[0].name;
       }
       catch (err) {
+        data_file_name = document.getElementById('datafile').defaultValue;
+        //data_file_name = datafilename;
+/*
         if ((data_file_content != null) &&(data_file_content.length > 0))
           data_file_name = "data.dat";
         else
           data_file_name = null;
-      }
+*/
+     }
       return (data_file_name);
     }
 
