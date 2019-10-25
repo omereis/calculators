@@ -41,7 +41,7 @@ function upload_problem_name() {
     }
   }
   else {
-    problem_name = document.getElementById('datafile').defaultValue;
+    problem_name = document.getElementById('remote_file').value;//document.getElementById('datafile').defaultValue;
   }
   return (problem_name);
 }
@@ -1027,6 +1027,7 @@ var app_init = function(opts) {
       var file = document.getElementById('datafile').files[0]; // only one file allowed
       try {
         datafilename = file.name;
+        document.getElementById('remote_file').value = file.name;
         setScriptFileName (datafilename);
         var reader = new FileReader();
         reader.onload = function(e) {
@@ -1049,7 +1050,8 @@ var app_init = function(opts) {
           document.getElementById('remote_tag').value = jsonRemoteJob.tag
           document.getElementById('inRemoteID').value = jsonRemoteJob.job_id
           datafilename = jsonRemoteJob.problem_name;
-          document.getElementById('datafile').defaultValue = jsonRemoteJob.problem_name;
+          document.getElementById('remote_file').value = jsonRemoteJob.problem_name;
+          //document.getElementById('datafile').defaultValue = jsonRemoteJob.problem_name;
           set_data (jsonRemoteJob.data);
           updateFromRemoteTable(jsonRemoteJob.fit_table, jsonRemoteJob.chi_square);
           window.focus();
@@ -1240,9 +1242,6 @@ var app_init = function(opts) {
           var lstr_py = pyscript.trim().split('\n');
           var strToFit = get_string_to_fit (get_to_fit());
           var strScript = modifySelection(lstr_py, strToFit);
-          var write_file = false;
-          //if (write_file)
-            //saveData(strScript, filename);
           if (export_dest == 'zip') {
             save_data_files (strScript, filename, datafilename);
           }
@@ -1428,7 +1427,7 @@ var app_init = function(opts) {
         display_remote_id(wjMsg);
       }
       else if (wjMsg.command == ServerCommands.GET_STATUS) {
-        HandleStatusReply(wjMsg);
+        handleStatusReply(wjMsg);
       }
       else if (wjMsg.command == ServerCommands.GET_REFL1D_RESULTS) {
         handleRefl1dRessults(wjMsg);
@@ -1440,6 +1439,7 @@ var app_init = function(opts) {
         }
     }
     catch (err) {
+      setRemoteStatus ('error');
       console.log(err);
       alert (wsMsg);
     }
@@ -1491,7 +1491,7 @@ var app_init = function(opts) {
     return (document.getElementById('spanRemoteStatus').innerText);
   }
 
-  function HandleStatusReply(wjMsg) {
+  function handleStatusReply(wjMsg) {
     console.log(wjMsg);
     if (wjMsg.params.length >= 0) {
       var guiID = uploadRemoteID(), remoteID = wjMsg.params[0].job_id;
@@ -1510,8 +1510,8 @@ var app_init = function(opts) {
     var txt;
     txt = layer.thickness.value.toString() + '\t' + 
           layer.interface.value.toString() + '\t' + 
-          layer.rho.value.toString() + '\t' + 
-          layer.irho.value.toString();
+          layer.material.rho.value.toString() + '\t' + 
+          layer.material.irho.value.toString();
     return (txt);
   }
 
@@ -1523,6 +1523,7 @@ var app_init = function(opts) {
     jsonSignal['problem_name'] = wjMsg.params.problem_name;
     localStorage.setItem('refl1d_fit_completed', JSON.stringify(jsonSignal));
     localStorage.removeItem ('refl1d_fit_completed');
+    document.getElementById('remote_file').value = wjMsg.params.problem_name;
     updateFromRemoteTable (wjMsg.params.json_data, wjMsg.params.chi_square);
   }
 
@@ -1626,7 +1627,7 @@ var app_init = function(opts) {
         data_file_name = document.getElementById('datafile').files[0].name;
       }
       catch (err) {
-        data_file_name = document.getElementById('datafile').defaultValue;
+        data_file_name = document.getElementById('remote_file').value;
         //data_file_name = datafilename;
 /*
         if ((data_file_content != null) &&(data_file_content.length > 0))
@@ -1651,38 +1652,87 @@ var app_init = function(opts) {
 
     function modifySelection(lstr_py, strToFit) {
       var dictFitToScript = {"thickness":"thickness", "roughness":"interface", "sld":"rho", "mu":"irho"};
-      var lstrToFit = [];
+      var lstrRangeToPmp = [], lstrNotToFit = [];
+      var lstrToFit = [], range_to_pmp=[];
       var fit_params = get_fit_params(strToFit);
-      lstrToFit = get_fit_string (fit_params, dictFitToScript);
-      lstr_py = comment_out_selected_params (lstr_py, lstrToFit);
+      //lstrToFit = get_fit_string (fit_params, dictFitToScript);
+      get_fit_string (fit_params, dictFitToScript, lstrNotToFit, lstrRangeToPmp);
+//      var dictStrings = {'comment_out': lstrNotToFit, 'range_to_pmp': lstrRangeToPmp}
+      lstr_py = comment_out_selected_params (lstr_py, lstrNotToFit, lstrRangeToPmp);
+//      lstr_py = comment_out_selected_params (lstr_py, lstrToFit);
       return (lstr_py.join('\n'));
     }
 
-    function comment_out_selected_params (lstr_py, lstrToFit) {
+    function findSubString (strLine, lstrSubs) {
+      var n, found;
+
+      for (n=0, found=-1 ; (n < lstrSubs.length) && (found < 0) ; n++) {
+        if (strLine.includes(lstrSubs[n])) {
+          found = n;
+        }
+      }
+      return (found);
+    }
+    /*
+| Screen    | script    |
++++++++++++++++++++++++++
+| thickness | thickness |
+| roughness | interface |
+| SLDn      | rho       |
+| iSLDn     | irho      |
+sldN.rho.range
+*/
+    function comment_out_selected_params (lstr_py, lstrNotToFit, lstrRangeToPmp) {
       for (var n=0 ; n < lstr_py.length ; n++) {
         var strLine = lstr_py[n];
-        var found = false;
-        for (var i=0 ; (i < lstrToFit.length) && (!found) ; i++) {
-          if (strLine.includes(lstrToFit[i])) {
-            found = true;
-          }
+        if (strLine.substring(0,3) == "sld") {
+          var strSld = strLine;
+          console.log(strSld);
         }
-        if (found) {
+        if (findSubString (strLine, lstrNotToFit) >= 0) {
           lstr_py[n] = "# " + strLine;
         }
+/**/
+        else if (findSubString (strLine, lstrRangeToPmp) >= 0) {
+          var p = lstr_py[n].indexOf('.range');
+          if (p > 0) {
+            var s = lstr_py[n].substring(0, p) + '.pmp(25)'
+            lstr_py[n] = s;
+          }
+          //lstr_py[n] += "# ";
+      }
+/**/
       }
       return (lstr_py);
     }
 
-    function get_fit_string (fit_params, dictFitToScript) {
-      var lstrToFit = [];
+    function getJsonkeys(json) {
+      var arrKeys = [];
+      for (var i in json) {
+        arrKeys.push(i);
+      }
+      return (arrKeys);
+    }
+
+    function get_fit_string (fit_params, dictFitToScript, lstrNotToFit, lstrRangeToPmp) {
+      var arr, strParams, /*lstrRangeToPmp = [], lstrNotToFit = [],*/ arrFitKeys = getJsonkeys(dictFitToScript);
+      var dictStrings = {};
       for (var n=0 ; n < fit_params.length ; n++) {
-        for (var i=0 ; i < fit_params[i].length ; i++) {
-          var strParam = n.toString() + "." + dictFitToScript[fit_params[n][i]] + ".range";
-          lstrToFit.push(strParam);
+        for (var i=0 ; i < arrFitKeys.length ; i++) {
+          strParams = n.toString() + "." + dictFitToScript[arrFitKeys[i]] + ".range";
+          if (fit_params[n].indexOf(arrFitKeys[i]) < 0) {
+            lstrNotToFit.push(strParams);
+          }
+          else {
+            lstrRangeToPmp.push(strParams);
+          }
         }
       }
-      return (lstrToFit);
+      dictStrings['comment_out'] = lstrNotToFit;
+      dictStrings['range_to_pmp'] = lstrRangeToPmp;
+      console.log(dictStrings);
+      return ([lstrNotToFit,lstrRangeToPmp]);
+      //return (lstrNotToFit);
     }
 
     function get_fit_params(strToFit) {
@@ -1706,14 +1756,42 @@ var app_init = function(opts) {
     document.getElementById("btnRemoteTbl").onclick = onRemoteTable;
     document.getElementById("btnTestServer").onclick = onTestComm;
     $(window).on('storage', remote_fit_message_handler);
+    window.onbeforeunload = beforeWindowClose;
+    getWindowName ();
 
-    function onRemoteJobs () {
-      var dlg = $('#'+ strRemoteJobsDialogName);
-      dlg.removeClass('ui-dialog-content');
-      dlg.removeClass('ui-widget-content');
-      dlg.removeClass('table');
-      loadRemoteJobs();
-      dlg.dialog('open');
+    function beforeWindowClose () {
+      var iName, nWindows, strName, astrNames, txtNames = localStorage.getItem('calculators_window');
+      if (txtNames) {
+        astrNames = txtNames.split(',');
+        strName = document.getElementById('calcWindowName').innerText;
+        iName = astrNames.indexOf(strName);
+        if (iName >= 0) {
+          astrNames.splice(iName,1);
+          localStorage.setItem('calculators_window', astrNames.join(','));
+        }
+      }
+    }
+    function getWindowName () {
+      var iName, nWindows, strName, astrNames, txtNames = localStorage.getItem('calculators_window');
+      if (txtNames) {
+        astrNames = txtNames.split(',');
+        localStorage.setItem('calculators_window', astrNames.join(','));
+      }
+      else {
+        astrNames = [];
+      }
+      iName = nWindows = 1;
+      while (iName >= 0) {
+        strName = 'Calculator ' + String(nWindows).padStart(2,'0');
+        iName = astrNames.indexOf(strName);
+        nWindows++;
+      }
+      astrNames.push(strName);
+      console.log(txtNames);
+      localStorage.setItem('calculators_window', astrNames.join(','));
+      var cell = document.getElementById('calcWindowName');
+      cell.innerText = strName;
+      //txtNames = localStorage.getItem('calculators_window');
     }
 
     function loadLocalTags() {

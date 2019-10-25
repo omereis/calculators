@@ -228,6 +228,7 @@ hr.betweenplots {
 /*#tblTopPanel {*/
 .tblTopPanel {
     border: 0px;
+    /*border: 1px solid blue;*/
     width: 100%;
     display: table;
 }
@@ -237,8 +238,13 @@ hr.betweenplots {
 .tblTopPanel td{
 /*.tblTopPanelTd {*/
     border: 0;
+    /*border: 2px solid rgb(0, 255, 136);*/
     white-space: nowrap;
     text-align: center;
+}
+.cellMyWindow {
+    background-color: rgb(210, 219, 73);
+    color: darkblue;
 }
 #cellTopPanel {
     background-color: blue;
