@@ -1,3 +1,4 @@
+var idTargetCombo = 'combo_claculators_window';
 //-----------------------------------------------------------------------------
 function getMessageStart() {
     var message = new Object;
@@ -554,6 +555,17 @@ function getWindowsSelection(idCombo) {
     return (strWindow);
 }
 //-----------------------------------------------------------------------------
+function getTargetComboID (jsonParams) {
+    var aKeys = getJsonKeys (jsonParams);
+    if (aKeys.indexOf('local_id') >= 0) {
+        strTarget = idTargetCombo + '_' + jsonParams.local_id.toString();
+    }
+    else {
+        strTarget = idTargetCombo + '_' + jsonParams.job_id.toString();
+    }
+    return (strTarget);
+}
+//-----------------------------------------------------------------------------
 function jsonJobToRow (row, jsonParams, remoteID) {
     var cell, n=0;
     var aKeys = getJsonKeys (jsonParams);
@@ -584,7 +596,12 @@ function jsonJobToRow (row, jsonParams, remoteID) {
     cell.innerText = jsonParams.tag;
 
     cell = row.insertCell (n++);
-    cell.innerText = jsonParams.window_name;
+    //cell.innerText = jsonParams.window_name;
+    //cell.innerHTML = getWindowsSelection(idTargetCombo + '_' + jsonParams.local_id.toString());//jsonMessage.window_name
+    cell.innerHTML = getWindowsSelection(getTargetComboID (jsonParams));
+    if (aKeys.indexOf('window_name') >= 0) {
+        selectTargetWindow (getTargetComboID (jsonParams), jsonParams.window_name);
+    }
 
     cell = row.insertCell (n++);
     cell.innerText = jsonParams.sent_date;
@@ -608,6 +625,13 @@ function remoteResultsToCharts(jsonParams) {
             alert ('Error in job #' + jsonParams[0].job_id + '\n' + jsonParams[0].error);
         }
         else {
+            var id = getRemotejobPretext () + jsonParams[0].job_id;
+            var btn = document.getElementById(id);
+            var row = btn.parentElement.parentElement;
+            var target = row.cells[4].innerHTML;
+            var cb = jQuery.parseHTML(target);
+            var target_name = cb[0].item(cb[0].options.selectedIndex).value;
+            jsonParams[0]['window_name'] = target_name;
             localStorage.setItem('refl1d_remote_fit', JSON.stringify(jsonParams[0]));
             localStorage.removeItem('refl1d_remote_fit');
         }
@@ -763,20 +787,21 @@ function getComboIndexOf (combo, option) {
     return (iFound);
 }
 //-----------------------------------------------------------------------------
+function selectTargetWindow (idCombo, windowName) {
+    var combo = document.getElementById(idCombo);
+    var idx = getComboIndexOf (combo, windowName);
+    if (idx >= 0) {
+        combo.options.selectedIndex = idx;
+    }
+}
+//-----------------------------------------------------------------------------
 function updateCompletedRefl1dFit (jsonMessage) {
     try {
         var table = document.getElementById('tblRemoteJobs');
         var row = findRowInTable (table, 1, jsonMessage.job_id);
         if (row > 0) {
-            var idCombo = 'combo_claculators_window';
             table.rows[row].cells[1].innerHTML = getRemoteJobButton (jsonMessage.job_id, true);
-            table.rows[row].cells[4].innerHTML = getWindowsSelection(idCombo);//jsonMessage.window_name
             table.rows[row].cells[7].innerText = jsonMessage.chi_square;
-            var combo = document.getElementById(idCombo);
-            var idx = getComboIndexOf (combo, jsonMessage.window_name);
-            if (idx >= 0) {
-                combo.options.selectedIndex = idx;
-            }
         }
     }
     catch (err) {
