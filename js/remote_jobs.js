@@ -535,6 +535,25 @@ function getRemoteJobButton (remoteID, addButton=true) {
     return (strContent);
 }
 //-----------------------------------------------------------------------------
+function getWindowsSelection(idCombo) {
+    var strWindow, txtNames = localStorage.getItem('calculators_window');
+    var astrNames = txtNames.split(',');
+    if (astrNames.length == 0) {
+        strWindow = '';
+    }
+    if (astrNames.length == 1) {
+        strWindow = astrNames[0];
+    }
+    else {
+        var strItems = '';
+        for (var n=0 ; n < astrNames.length ; n++) {
+            strItems += '<option value="' + astrNames[n] + '">' + astrNames[n] + '</option>';
+        }
+        strWindow = '<select id="' + idCombo + '">' + strItems + '</select>';
+    }
+    return (strWindow);
+}
+//-----------------------------------------------------------------------------
 function jsonJobToRow (row, jsonParams, remoteID) {
     var cell, n=0;
     var aKeys = getJsonKeys (jsonParams);
@@ -733,13 +752,31 @@ function updateRemoteIdFromLocalId (jsonMessage) {
     }
 }
 //-----------------------------------------------------------------------------
+function getComboIndexOf (combo, option) {
+    var n, iFound = -1;
+
+    for (n=0 ; (n < combo.options.length) && (iFound < 0) ; n++) {
+        if (combo.item(n).value == option) {
+            iFound = n;
+        }
+    }
+    return (iFound);
+}
+//-----------------------------------------------------------------------------
 function updateCompletedRefl1dFit (jsonMessage) {
     try {
         var table = document.getElementById('tblRemoteJobs');
         var row = findRowInTable (table, 1, jsonMessage.job_id);
         if (row > 0) {
+            var idCombo = 'combo_claculators_window';
             table.rows[row].cells[1].innerHTML = getRemoteJobButton (jsonMessage.job_id, true);
-            table.rows[row].cells[6].innerText = jsonMessage.chi_square;
+            table.rows[row].cells[4].innerHTML = getWindowsSelection(idCombo);//jsonMessage.window_name
+            table.rows[row].cells[7].innerText = jsonMessage.chi_square;
+            var combo = document.getElementById(idCombo);
+            var idx = getComboIndexOf (combo, jsonMessage.window_name);
+            if (idx >= 0) {
+                combo.options.selectedIndex = idx;
+            }
         }
     }
     catch (err) {
