@@ -565,6 +565,9 @@ function jsonJobToRow (row, jsonParams, remoteID) {
     cell.innerText = jsonParams.tag;
 
     cell = row.insertCell (n++);
+    cell.innerText = jsonParams.window_name;
+
+    cell = row.insertCell (n++);
     cell.innerText = jsonParams.sent_date;
 
     cell = row.insertCell (n++);

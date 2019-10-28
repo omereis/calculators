@@ -88,6 +88,7 @@ function composeRefl1dFitMessage(txtProblem) {
   message['problem_name'] = upload_problem_name();
   message['multi_processing'] = upload_multiprocessing();
   message['local_id'] = generateLocalID ();
+  message['window_name'] = document.getElementById('calcWindowName').innerText;
   return (message);
 }
 
@@ -1521,6 +1522,7 @@ var app_init = function(opts) {
     jsonSignal['chi_square'] = wjMsg.params.chi_square;
     jsonSignal['job_id'] = wjMsg.params.job_id;
     jsonSignal['problem_name'] = wjMsg.params.problem_name;
+    jsonSignal['window_name'] = document.getElementById('calcWindowName').innerText;
     localStorage.setItem('refl1d_fit_completed', JSON.stringify(jsonSignal));
     localStorage.removeItem ('refl1d_fit_completed');
     document.getElementById('remote_file').value = wjMsg.params.problem_name;
@@ -1673,15 +1675,7 @@ var app_init = function(opts) {
       }
       return (found);
     }
-    /*
-| Screen    | script    |
-+++++++++++++++++++++++++
-| thickness | thickness |
-| roughness | interface |
-| SLDn      | rho       |
-| iSLDn     | irho      |
-sldN.rho.range
-*/
+
     function comment_out_selected_params (lstr_py, lstrNotToFit, lstrRangeToPmp) {
       for (var n=0 ; n < lstr_py.length ; n++) {
         var strLine = lstr_py[n];
@@ -1692,16 +1686,13 @@ sldN.rho.range
         if (findSubString (strLine, lstrNotToFit) >= 0) {
           lstr_py[n] = "# " + strLine;
         }
-/**/
         else if (findSubString (strLine, lstrRangeToPmp) >= 0) {
           var p = lstr_py[n].indexOf('.range');
           if (p > 0) {
             var s = lstr_py[n].substring(0, p) + '.pmp(25)'
             lstr_py[n] = s;
           }
-          //lstr_py[n] += "# ";
-      }
-/**/
+        }
       }
       return (lstr_py);
     }
@@ -1757,7 +1748,7 @@ sldN.rho.range
     document.getElementById("btnTestServer").onclick = onTestComm;
     $(window).on('storage', remote_fit_message_handler);
     window.onbeforeunload = beforeWindowClose;
-    getWindowName ();
+    assignWindowName ();
 
     function beforeWindowClose () {
       var iName, nWindows, strName, astrNames, txtNames = localStorage.getItem('calculators_window');
@@ -1771,7 +1762,8 @@ sldN.rho.range
         }
       }
     }
-    function getWindowName () {
+
+    function assignWindowName () {
       var iName, nWindows, strName, astrNames, txtNames = localStorage.getItem('calculators_window');
       if (txtNames) {
         astrNames = txtNames.split(',');
