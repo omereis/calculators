@@ -1043,8 +1043,9 @@ var app_init = function(opts) {
 
     function remote_fit_message_handler(ev) {
       console.log('message handler');
-      //set_data('#no data');
       if (ev.originalEvent.key == 'refl1d_remote_fit') {
+        handleRemoteFit (ev);
+/*
         var jsonRemoteJob = JSON.parse(ev.originalEvent.newValue);
         if (jsonRemoteJob) {
           var window_name = document.getElementById('calcWindowName').innerText;
@@ -1060,9 +1061,42 @@ var app_init = function(opts) {
             window.focus();
           }
         }
+*/
         console.log(ev.originalEvent.newValue);
       }
+      else if (ev.originalEvent.key == 'calculators_window') {
+        handleCalculatorWindowOpenClose(ev);
+      }
+
     }
+
+    function handleRemoteFit (ev) {
+      var jsonRemoteJob = JSON.parse(ev.originalEvent.newValue);
+      if (jsonRemoteJob) {
+        var window_name = document.getElementById('calcWindowName').innerText;
+        if (window_name.toLowerCase() == jsonRemoteJob.window_name.toLowerCase()) {
+          document.getElementById('scriptname').value = jsonRemoteJob.zip_name
+          document.getElementById('remote_tag').value = jsonRemoteJob.tag
+          document.getElementById('inRemoteID').value = jsonRemoteJob.job_id
+          datafilename = jsonRemoteJob.problem_name;
+          document.getElementById('remote_file').value = jsonRemoteJob.problem_name;
+          //document.getElementById('datafile').defaultValue = jsonRemoteJob.problem_name;
+          set_data (jsonRemoteJob.data);
+          updateFromRemoteTable(jsonRemoteJob.fit_table, jsonRemoteJob.chi_square);
+          window.focus();
+        }
+      }
+    }
+
+/*
+    function handleCalculatorWindowOpenClose(ev) {
+      var astrNames, txtNames = localStorage.getItem('calculators_window');
+      if (txtNames) {
+        astrNames = txtNames.split(',');
+        console.log(astrNames);
+      }
+    }
+*/
 
     function setScriptFileName (datafilename) {
         var scriptName = '';
@@ -1754,7 +1788,7 @@ var app_init = function(opts) {
     assignWindowName ();
 
     function beforeWindowClose () {
-      var iName, nWindows, strName, astrNames, txtNames = localStorage.getItem('calculators_window');
+      var iName, strName, astrNames, txtNames = localStorage.getItem('calculators_window');
       if (txtNames) {
         astrNames = txtNames.split(',');
         strName = document.getElementById('calcWindowName').innerText;

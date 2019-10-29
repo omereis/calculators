@@ -84,7 +84,7 @@ function composeLoadJobsByIDMessage(remoteID) {
 }
 //-----------------------------------------------------------------------------
 function app_init() {
-    $(window).on('storage', remote_fit_job_sent);
+    $(window).on('storage', localStorageChange);
     tagsLocalToTable();
     onLoadRemoteTagsClick();
 }
@@ -705,7 +705,7 @@ function onDeleteRemoteTagsClick() {
     }
 }
 //-----------------------------------------------------------------------------
-function remote_fit_job_sent (ev) {
+function localStorageChange (ev) {
     if (ev.originalEvent.key == 'refl1d_remote_fit_sent') {
         var strMessage = ev.originalEvent.newValue;
         if (strMessage != null) {
@@ -724,6 +724,9 @@ function remote_fit_job_sent (ev) {
         if (strMessage != null) {
             updateCompletedRefl1dFit (JSON.parse(strMessage));
         }
+    }
+    else if (ev.originalEvent.key == 'calculators_window') {
+        handleCalculatorWindowOpenClose();
     }
 }
 //-----------------------------------------------------------------------------
@@ -809,6 +812,7 @@ function updateCompletedRefl1dFit (jsonMessage) {
         console.log(err);
     }
 }
+//-----------------------------------------------------------------------------
 function onSelectAllJobsClick(id) {
     var cbox = document.getElementById(id);
     var checked = cbox.checked;
@@ -819,4 +823,91 @@ function onSelectAllJobsClick(id) {
         cbox.checked = checked;
     }
 }
+//-----------------------------------------------------------------------------
+function handleCalculatorWindowOpenClose() {
+    var op, strDiff=null, astrNew, astrCurrent, txtNames = localStorage.getItem('calculators_window');
+    var tbl = document.getElementById('tblRemoteJobs');        
+    astrNew = txtNames.split(',');
+    astrCurrent = getWindowSelectOptions();
+    for (var n=0 ; (n < astrNew.length) && (strDiff == null) ; n++) {
+        if (astrCurrent.indexOf(astrNew[n]) < 0) {
+            strDiff = astrNew[n];
+            op = '+';
+        }
+    }
+    if (strDiff == null) {
+        for (var n=0 ; (n < astrCurrent.length) && (strDiff == null) ; n++) {
+            if (astrNew.indexOf(astrCurrent[n]) < 0) {
+                strDiff = astrCurrent[n];
+                op = '-';
+            }
+        }
+    }
+    if (tbl.rows.length > 1) {
+        if (strDiff != null) {
+            if (op == '+') {
+                addWindowSelect(tbl, strDiff);
+            }
+            else {
+                delWindowSelect(tbl, strDiff);
+            }
+        }
+    }
+}
+//-----------------------------------------------------------------------------
+function addWindowSelect(tbl, strDiff) {
+    var opt = document.createElement('option');
+    opt.value = strDiff;
+    opt.innerHTML = strDiff;
+    for (var n=1 ; n < tbl.rows.length ; n++) {
+        cell = tbl.rows[n].cells[4];
+        cb = jQuery.parseHTML(cell.innerHTML);
+        var select = document.getElementById(cb[0].id);
+        select.appendChild(opt);
+    }
+}
+//-----------------------------------------------------------------------------
+function delWindowSelect(tbl, strDiff) {
+    var iDel, iCurrent, strCurrentOption=null;
+    for (var n=1 ; n < tbl.rows.length ; n++) {
+        cell = tbl.rows[n].cells[4];
+        cb = jQuery.parseHTML(cell.innerHTML);
+        var select = document.getElementById(cb[0].id);
+        iCurrent = select.selectedIndex;
+        iDel = selectOptionIndex (select, strDiff);
+        if (iDel >= 0) {
+            if (iDel != iCurrent) {
+                strCurrentOption = select.options[iCurrent].value;
+            }
+            select.options[iDel] = null; // actual deletion
+            if (strCurrentOption) {
+                select.selectedIndex = selectOptionIndex (select, strCurrentOption);
+            }
+        }
+
+        console.log(strDiff);
+    }
+}
+//-----------------------------------------------------------------------------
+function selectOptionIndex (select, strDiff) {
+    var iFound;
+    for (var n=0, iFound=-1 ; (n < select.options.length) && (iFound < 0) ; n++) {
+        if (strDiff == select.options[n].value) {
+            iFound = n;
+        }
+    }
+    return (iFound);
+}
+//-----------------------------------------------------------------------------
+function getWindowSelectOptions() {
+    var cb, astr = [], tbl = document.getElementById('tblRemoteJobs');
+    if (tbl.rows.length > 1) {
+        cell = tbl.rows[1].cells[4];
+        cb = jQuery.parseHTML(cell.innerHTML);
+        for (var n=0 ; n < cb[0].options.length ; n++) {
+            astr.push(cb[0].options[n].value);
+        }
+    }
+    return (astr);
+  }
 //-----------------------------------------------------------------------------
