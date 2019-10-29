@@ -94,13 +94,14 @@ function tagsLocalToTable() {
     var cell, row, tbl = document.getElementById('tblTags');
     astr = strTags.split(',');
     for (n=0 ; n < astr.length ; n++) {
-        row = tbl.insertRow(tbl.rows.length);
-        cell = row.insertCell(0);
-        cell.innerHTML = '<input type="checkbox" id="' + astr[n] + '" onclick="onTagCheck(id)">' + astr[n];
-        cell = row.insertCell(1);
-        cell.style.textAlign="center";
-        cell.innerText = '-';
-       
+        if (astr[n].length > 0) {
+            row = tbl.insertRow(tbl.rows.length);
+            cell = row.insertCell(0);
+            cell.innerHTML = '<input type="checkbox" id="' + astr[n] + '" onclick="onTagCheck(id)">' + astr[n];
+            cell = row.insertCell(1);
+            cell.style.textAlign="center";
+            cell.innerText = '-';
+        }
     }
 }
 //-----------------------------------------------------------------------------
@@ -120,7 +121,7 @@ function countCheckedTags() {
     var tbl, n, nCount=0, jc, cbox;
 
     tbl = document.getElementById('tblTags');
-    for (n=3 ; n < tbl.rows.length ; n++) {
+    for (n=2 ; n < tbl.rows.length ; n++) {
         jc = jQuery.parseHTML(tbl.rows[n].cells[0].innerHTML);
         cbox = document.getElementById(jc[0].id);
         if (cbox.checked){
@@ -387,14 +388,6 @@ function uploadCheckedTags() {
 
     astr = strTags.split(',');
     astrChecked = getCheckedByIDs(astr);
-/*
-    for (n=0 ; n < astr.length ; n++) {
-        var cbox = document.getElementById(astr[n]);
-        if (cbox.checked) {
-            astrChecked.push(astr[n]);
-        }
-    }
-*/
     return (astrChecked);
 }
 //-----------------------------------------------------------------------------
@@ -402,9 +395,14 @@ function getCheckedByIDs(astr) {
     var n, cbox, astrChecked = [];
 
     for (n=0 ; n < astr.length ; n++) {
-        cbox = document.getElementById(astr[n]);
-        if (cbox.checked) {
-            astrChecked.push(astr[n]);
+        try {
+            cbox = document.getElementById(astr[n]);
+            if (cbox.checked) {
+                astrChecked.push(astr[n]);
+            }
+        }
+        catch (err) {
+            console.log(err);
         }
     }
     return (astrChecked);
