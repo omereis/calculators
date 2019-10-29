@@ -1047,15 +1047,18 @@ var app_init = function(opts) {
       if (ev.originalEvent.key == 'refl1d_remote_fit') {
         var jsonRemoteJob = JSON.parse(ev.originalEvent.newValue);
         if (jsonRemoteJob) {
-          document.getElementById('scriptname').value = jsonRemoteJob.zip_name
-          document.getElementById('remote_tag').value = jsonRemoteJob.tag
-          document.getElementById('inRemoteID').value = jsonRemoteJob.job_id
-          datafilename = jsonRemoteJob.problem_name;
-          document.getElementById('remote_file').value = jsonRemoteJob.problem_name;
-          //document.getElementById('datafile').defaultValue = jsonRemoteJob.problem_name;
-          set_data (jsonRemoteJob.data);
-          updateFromRemoteTable(jsonRemoteJob.fit_table, jsonRemoteJob.chi_square);
-          window.focus();
+          var window_name = document.getElementById('calcWindowName').innerText;
+          if (window_name.toLowerCase() == jsonRemoteJob.window_name.toLowerCase()) {
+            document.getElementById('scriptname').value = jsonRemoteJob.zip_name
+            document.getElementById('remote_tag').value = jsonRemoteJob.tag
+            document.getElementById('inRemoteID').value = jsonRemoteJob.job_id
+            datafilename = jsonRemoteJob.problem_name;
+            document.getElementById('remote_file').value = jsonRemoteJob.problem_name;
+            //document.getElementById('datafile').defaultValue = jsonRemoteJob.problem_name;
+            set_data (jsonRemoteJob.data);
+            updateFromRemoteTable(jsonRemoteJob.fit_table, jsonRemoteJob.chi_square);
+            window.focus();
+          }
         }
         console.log(ev.originalEvent.newValue);
       }

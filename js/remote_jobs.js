@@ -630,7 +630,8 @@ function remoteResultsToCharts(jsonParams) {
             var row = btn.parentElement.parentElement;
             var target = row.cells[4].innerHTML;
             var cb = jQuery.parseHTML(target);
-            var target_name = cb[0].item(cb[0].options.selectedIndex).value;
+            var select = document.getElementById(cb[0].id);
+            var target_name = select.item(select.options.selectedIndex).value;
             jsonParams[0]['window_name'] = target_name;
             localStorage.setItem('refl1d_remote_fit', JSON.stringify(jsonParams[0]));
             localStorage.removeItem('refl1d_remote_fit');
