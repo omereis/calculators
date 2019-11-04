@@ -91,16 +91,18 @@ function app_init() {
 //-----------------------------------------------------------------------------
 function tagsLocalToTable() {
     var n, astr, strTags = localStorage.getItem(get_refl1d_tag_name());
-    var cell, row, tbl = document.getElementById('tblTags');
-    astr = strTags.split(',');
-    for (n=0 ; n < astr.length ; n++) {
-        if (astr[n].length > 0) {
-            row = tbl.insertRow(tbl.rows.length);
-            cell = row.insertCell(0);
-            cell.innerHTML = '<input type="checkbox" id="' + astr[n] + '" onclick="onTagCheck(id)">' + astr[n];
-            cell = row.insertCell(1);
-            cell.style.textAlign="center";
-            cell.innerText = '-';
+    if (strTags != null) {
+        var cell, row, tbl = document.getElementById('tblTags');
+        astr = strTags.split(',');
+        for (n=0 ; n < astr.length ; n++) {
+            if (astr[n].length > 0) {
+                row = tbl.insertRow(tbl.rows.length);
+                cell = row.insertCell(0);
+                cell.innerHTML = '<input type="checkbox" id="' + astr[n] + '" onclick="onTagCheck(id)">' + astr[n];
+                cell = row.insertCell(1);
+                cell.style.textAlign="center";
+                cell.innerText = '-';
+            }
         }
     }
 }
@@ -540,16 +542,11 @@ function getWindowsSelection(idCombo) {
     if (astrNames.length == 0) {
         strWindow = '';
     }
-    if (astrNames.length == 1) {
-        strWindow = astrNames[0];
+    var strItems = '';
+    for (var n=0 ; n < astrNames.length ; n++) {
+        strItems += '<option value="' + astrNames[n] + '">' + astrNames[n] + '</option>';
     }
-    else {
-        var strItems = '';
-        for (var n=0 ; n < astrNames.length ; n++) {
-            strItems += '<option value="' + astrNames[n] + '">' + astrNames[n] + '</option>';
-        }
-        strWindow = '<select id="' + idCombo + '">' + strItems + '</select>';
-    }
+    strWindow = '<select id="' + idCombo + '">' + strItems + '</select>';
     return (strWindow);
 }
 //-----------------------------------------------------------------------------
@@ -571,6 +568,8 @@ function jsonJobToRow (row, jsonParams, remoteID) {
     while (row.cells.length > 0) {
         row.deleteCell(0);
     }
+
+    row['remote_id'] = jsonParams.job_id;
 
     cell = row.insertCell (n++);
 
@@ -594,8 +593,7 @@ function jsonJobToRow (row, jsonParams, remoteID) {
     cell.innerText = jsonParams.tag;
 
     cell = row.insertCell (n++);
-    //cell.innerText = jsonParams.window_name;
-    //cell.innerHTML = getWindowsSelection(idTargetCombo + '_' + jsonParams.local_id.toString());//jsonMessage.window_name
+
     cell.innerHTML = getWindowsSelection(getTargetComboID (jsonParams));
     if (aKeys.indexOf('window_name') >= 0) {
         selectTargetWindow (getTargetComboID (jsonParams), jsonParams.window_name);
@@ -825,31 +823,11 @@ function onSelectAllJobsClick(id) {
 function handleCalculatorWindowOpenClose() {
     var op, strDiff=null, astrNew, astrCurrent, txtNames = localStorage.getItem('calculators_window');
     var tbl = document.getElementById('tblRemoteJobs');        
-    astrNew = txtNames.split(',');
-    astrCurrent = getWindowSelectOptions();
-    for (var n=0 ; (n < astrNew.length) && (strDiff == null) ; n++) {
-        if (astrCurrent.indexOf(astrNew[n]) < 0) {
-            strDiff = astrNew[n];
-            op = '+';
-        }
-    }
-    if (strDiff == null) {
-        for (var n=0 ; (n < astrCurrent.length) && (strDiff == null) ; n++) {
-            if (astrNew.indexOf(astrCurrent[n]) < 0) {
-                strDiff = astrCurrent[n];
-                op = '-';
-            }
-        }
-    }
-    if (tbl.rows.length > 1) {
-        if (strDiff != null) {
-            if (op == '+') {
-                addWindowSelect(tbl, strDiff);
-            }
-            else {
-                delWindowSelect(tbl, strDiff);
-            }
-        }
+    for (var n=1 ; n < tbl.rows.length ; n++) {
+        var cell = tbl.rows[n].cells[4];
+        var remoteID = tbl.rows[n].remote_id;
+        var idCombo = idTargetCombo + '_' + remoteID.toString();
+        cell.innerHTML = getWindowsSelection(idCombo);
     }
 }
 //-----------------------------------------------------------------------------
@@ -882,8 +860,6 @@ function delWindowSelect(tbl, strDiff) {
                 select.selectedIndex = selectOptionIndex (select, strCurrentOption);
             }
         }
-
-        console.log(strDiff);
     }
 }
 //-----------------------------------------------------------------------------
@@ -905,6 +881,16 @@ function getWindowSelectOptions() {
         for (var n=0 ; n < cb[0].options.length ; n++) {
             astr.push(cb[0].options[n].value);
         }
+/*
+        if (cb[0].hasOwnProperty('options')) {
+            for (var n=0 ; n < cb[0].options.length ; n++) {
+                astr.push(cb[0].options[n].value);
+            }
+        }
+        else { //the cell contains just text
+            astr.push(cb[0].wholeText);
+        }
+    */
     }
     return (astr);
   }
